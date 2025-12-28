@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    runs-on: windows-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: 启用 Corepack
+        run: corepack enable
+
+      - name: 安装 pnpm（通过 Corepack）
+        run: corepack prepare pnpm@latest --activate
+
+      - name: 获取 pnpm store 目录
+        shell: pwsh
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $env:GITHUB_ENV
+
+      - name: 设置 pnpm 缓存
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 安装 Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Rust 缓存
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+
+      - name: 安装前端依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 构建并发布
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "v__VERSION__"
+          releaseBody: |
+            ## 📦 下载说明
+
+            ### Windows 安装包
+            - **推荐**：下载 `.msi` 文件进行安装（会自动添加到开始菜单）
+            - **便携版**：下载 `.exe` 文件直接运行（无需安装）
+
+            ### 系统要求
+            - Windows 10/11 (64-bit)
+            - WebView2 Runtime（Windows 11 已预装）
+
+            ---
+
+            **完整更新日志**: https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.ref_name }}
+          releaseDraft: true
+          prerelease: false
+          includeUpdaterJson: true
+          args: --verbose
