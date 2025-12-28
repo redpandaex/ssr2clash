@@ -52,24 +52,28 @@ jobs:
       - name: 安装前端依赖
         run: pnpm install --frozen-lockfile
 
-      - name: 构建并发布
-        uses: tauri-apps/tauri-action@v0
+      - name: 构建便携版 exe（无安装包）
+        run: pnpm tauri build --bundles none
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: |
+            ## 📦 Windows 便携版
+
+            - **文件**：`ssr2clash.exe`
+            - **类型**：便携版（无需安装）
+            - **系统**：Windows 10 / 11 (64-bit)
+            - **说明**：首次运行如无法打开，请确认已安装 WebView2 Runtime
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 上传便携版 exe 到 Release
+        uses: softprops/action-gh-release@v2
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: "v__VERSION__"
-          releaseBody: |
-            ## 📦 Windows 安装包
-
-            - **推荐**：`.msi` 文件 - 标准安装程序
-            - **便携版**：`.exe` 文件 - 免安装运行
-
-            ## 系统要求
-            - Windows 10/11 (64-bit)
-            - WebView2 Runtime（Windows 11 已预装）
-          releaseDraft: false
-          prerelease: false
-          includeUpdaterJson: false
-          includeRelease: true
-          releaseCommitish: ${{ github.ref_name }}
+          files: |
+            src-tauri/target/release/ssr2clash.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
