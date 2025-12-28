@@ -60,20 +60,16 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: "v__VERSION__"
           releaseBody: |
-            ## 📦 下载说明
+            ## 📦 Windows 安装包
 
-            ### Windows 安装包
-            - **推荐**：下载 `.msi` 文件进行安装（会自动添加到开始菜单）
-            - **便携版**：下载 `.exe` 文件直接运行（无需安装）
+            - **推荐**：`.msi` 文件 - 标准安装程序
+            - **便携版**：`.exe` 文件 - 免安装运行
 
-            ### 系统要求
+            ## 系统要求
             - Windows 10/11 (64-bit)
             - WebView2 Runtime（Windows 11 已预装）
-
-            ---
-
-            **完整更新日志**: https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.ref_name }}
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
-          includeUpdaterJson: true
-          args: --verbose
+          includeUpdaterJson: false
+          includeRelease: true
+          releaseCommitish: ${{ github.ref_name }}
