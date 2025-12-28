@@ -10,7 +10,6 @@ interface CodeViewerProps {
 
 export function CodeViewer({
 	code,
-	language = "yaml",
 	placeholder = "转换后的配置将显示在这里...",
 }: CodeViewerProps) {
 	return (
