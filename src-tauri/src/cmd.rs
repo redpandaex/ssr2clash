@@ -3,7 +3,6 @@ use crate::ssr::converter::{convert_ssr_to_clash_proxy, generate_clash_config};
 use crate::ssr::filter::filter_nodes;
 use crate::ssr::parser::parse_ssr_link;
 
-/// 转换 SSR 链接列表为 Clash YAML 配置
 #[tauri::command]
 pub fn convert_ssr_to_clash(
     ssr_links: Vec<String>,
@@ -43,4 +42,11 @@ pub fn convert_ssr_to_clash(
         serde_yaml::to_string(&clash_config).map_err(|e| format!("生成 YAML 失败: {}", e))?;
 
     Ok(yaml)
+}
+
+#[tauri::command]
+pub fn parse_ssr_link_command(link: String) -> Result<String, String> {
+    let node = parse_ssr_link(&link).map_err(|e| format!("解析失败: {}", e))?;
+
+    serde_json::to_string(&node).map_err(|e| format!("序列化失败: {}", e))
 }
