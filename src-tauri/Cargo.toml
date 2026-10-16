@@ -38,6 +38,7 @@ async-trait = "0.1.92"
 chrono = { version = "0.4.45", default-features = false, features = ["clock", "std"] }
 tempfile = "3.27.0"
 uuid = { version = "1.28.0", features = ["v4"] }
+axum = { version = "0.8.9", default-features = false, features = ["http1", "tokio"] }
 
 [dev-dependencies]
 tokio = { version = "1.53.3", features = ["test-util"] }
