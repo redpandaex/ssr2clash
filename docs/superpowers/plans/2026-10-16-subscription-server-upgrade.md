@@ -137,11 +137,11 @@ assert_eq!(error.code, "UnsupportedPresetOption");
 
 **Interfaces:** `detect_data_paths(exe: &Path, app_data: &Path) -> Result<DataPaths, AppError>`，`DataPaths { run_mode: RunMode, root: PathBuf }`；`#[async_trait] trait Storage: Send + Sync { async fn load(&self) -> Result<Option<SavedState>, AppError>; async fn save(&self, state: &SavedState) -> Result<(), AppError>; }`；`FileStore` 实现 Storage。
 
-- [ ] **Step 1:** 用 tempfile 的独立目录写失败测试，覆盖 portable.flag、当前工作目录变化、没有标记、覆盖已有状态与未知 schema。注入测试用存储故障，断言失败后原 state 文件完整可读、原冻结 YAML 未变。
-- [ ] **Step 2:** 运行 `cargo test --manifest-path src-tauri/Cargo.toml --test storage_state`，先确认缺少目录识别或原子覆盖实现。
-- [ ] **Step 3:** 按 exe 的父目录识别标记，默认 Installed 使用传入 app_data。将完整 SavedState 作为一次提交原子写入；临时文件与目标同目录。用在 Windows 支持替换的机制，保存失败保留旧文件并清理本次临时文件。首次创建随机令牌并持久化。
-- [ ] **Step 4:** Windows 上实际验证覆盖、重新加载、中文／空格目录；测试生成令牌不会因重启改变，Portable 不静默退到 AppData，坏文件不会被默认空配置覆盖。
-- [ ] **Step 5:** 提交存储与测试，提交信息 `feat: persist portable and installed application state`。
+- [x] **Step 1:** 用 tempfile 的独立目录写失败测试，覆盖 portable.flag、当前工作目录变化、没有标记、覆盖已有状态与未知 schema。注入测试用存储故障，断言失败后原 state 文件完整可读、原冻结 YAML 未变。
+- [x] **Step 2:** 运行 `cargo test --manifest-path src-tauri/Cargo.toml --test storage_state`，先确认缺少目录识别或原子覆盖实现。
+- [x] **Step 3:** 按 exe 的父目录识别标记，默认 Installed 使用传入 app_data。将完整 SavedState 作为一次提交原子写入；临时文件与目标同目录。用在 Windows 支持替换的机制，保存失败保留旧文件并清理本次临时文件。首次创建随机令牌并持久化。
+- [x] **Step 4:** Windows 上实际验证覆盖、重新加载、中文／空格目录；测试生成令牌不会因重启改变，Portable 不静默退到 AppData，坏文件不会被默认空配置覆盖。
+- [x] **Step 5:** 提交存储与测试，提交信息 `feat: persist portable and installed application state`。
 
 ## Task 6: 实时／快照状态机与过期任务保护
 

@@ -3,6 +3,7 @@ pub mod conversion;
 pub mod model;
 pub mod preset;
 pub mod ssr;
+pub mod storage;
 pub mod subscription;
 
 use cmd::{convert_ssr_to_clash, parse_ssr_link_command};

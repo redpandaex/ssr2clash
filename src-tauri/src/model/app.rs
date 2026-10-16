@@ -119,3 +119,38 @@ pub struct OutputDetails {
     pub groups: Vec<super::clash::ClashProxyGroup>,
     pub decoded_preview: Option<String>,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum RunMode {
+    Portable,
+    Installed,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SavedState {
+    pub schema_version: u32,
+    pub revision: u64,
+    pub subscription_token: String,
+    pub settings: AppSettings,
+    pub mode: OutputMode,
+    pub service_enabled: bool,
+    pub last_good: Option<GeneratedConfig>,
+    pub frozen: Option<GeneratedConfig>,
+}
+
+impl SavedState {
+    pub fn fresh() -> Self {
+        Self {
+            schema_version: 1,
+            revision: 0,
+            subscription_token: uuid::Uuid::new_v4().simple().to_string(),
+            settings: AppSettings::default(),
+            mode: OutputMode::Live,
+            service_enabled: false,
+            last_good: None,
+            frozen: None,
+        }
+    }
+}
