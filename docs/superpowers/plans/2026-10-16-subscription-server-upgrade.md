@@ -149,7 +149,7 @@ assert_eq!(error.code, "UnsupportedPresetOption");
 
 **Interfaces:** `AppService::open(store: Arc<dyn Storage>, converter: Arc<dyn Converter>) -> Result<Self, AppError>` 为 async 构造；async 方法 `status() -> CoreStatus`、`save_settings(AppSettings)`、`set_snapshot(bool)`、`refresh() -> Result<GeneratedConfig, AppError>`、`serve_subscription() -> Result<ServedYaml, AppError>`、`set_service_enabled(bool)`、`cancel_refreshes()`。状态修改方法返回 `Result<CoreStatus, AppError>`；取消方法返回 `()`。`ServedYaml { yaml: String, stale: bool }`。
 
-- [ ] **Step 1:** 用可阻塞 Converter 与故障 Storage 写失败测试：
+- [x] **Step 1:** 用可阻塞 Converter 与故障 Storage 写失败测试：
 
 ```rust
 assert_eq!(converter.calls(), 2); // 两次 live 请求各自刷新
@@ -159,10 +159,10 @@ assert_eq!(error.code, "NoSnapshotAvailable");
 assert_eq!(service.status().await.active_result, old_result); // 保存失败后不发布新结果
 ```
 
-- [ ] **Step 2:** 运行 `cargo test --manifest-path src-tauri/Cargo.toml --test service_state`，确认接口或每一类语义先失败。
-- [ ] **Step 3:** 实现持久化状态的串行转换：先保存候选状态，成功后更新内存；网络转换不持状态锁。配置 revision 仅随影响输出的字段递增；源改变使旧回退无效。frozen 是 last_good 的独立拷贝，冻结后输出配置不可编辑；主题等非输出字段仍可编辑。
-- [ ] **Step 4:** 用 Notify／oneshot 屏障而非 sleep 测试旧请求完成晚于改源、切快照、停止服务；通过 generation epoch 与取消通知丢弃旧提交。测试同版本失败回退与无结果错误、服务开启意图跨重启，以及冻结时 refresh 返回 `SnapshotFrozen`。
-- [ ] **Step 5:** 提交状态服务与测试，提交信息 `feat: add durable live and frozen subscription modes`。
+- [x] **Step 2:** 运行 `cargo test --manifest-path src-tauri/Cargo.toml --test service_state`，确认接口或每一类语义先失败。
+- [x] **Step 3:** 实现持久化状态的串行转换：先保存候选状态，成功后更新内存；网络转换不持状态锁。配置 revision 仅随影响输出的字段递增；源改变使旧回退无效。frozen 是 last_good 的独立拷贝，冻结后输出配置不可编辑；主题等非输出字段仍可编辑。
+- [x] **Step 4:** 用 Notify／oneshot 屏障而非 sleep 测试旧请求完成晚于改源、切快照、停止服务；通过 generation epoch 与取消通知丢弃旧提交。测试同版本失败回退与无结果错误、服务开启意图跨重启，以及冻结时 refresh 返回 `SnapshotFrozen`。
+- [x] **Step 5:** 提交状态服务与测试，提交信息 `feat: add durable live and frozen subscription modes`。
 
 ## Task 7: Axum 订阅端点与可控服务生命周期
 
