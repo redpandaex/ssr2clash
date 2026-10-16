@@ -1,14 +1,7 @@
-import { Toaster } from "sonner";
-import { ConversionPage } from "@/components/pages/ConversionPage";
-import "./App.css";
+import { WorkbenchPage } from "@/components/pages/WorkbenchPage";
 
 function App() {
-	return (
-		<>
-			<ConversionPage />
-			<Toaster position="top-right" richColors />
-		</>
-	);
+	return <WorkbenchPage />;
 }
 
 export default App;

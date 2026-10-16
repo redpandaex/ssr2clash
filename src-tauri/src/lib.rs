@@ -27,11 +27,8 @@ pub fn run() {
                 .args(["--autostart"])
                 .build(),
         )
-        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_http::init())
-        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let context = tauri::async_runtime::block_on(DesktopContext::initialize(app.handle()));
             let initialized = context.core().is_ok();
@@ -56,6 +53,7 @@ pub fn run() {
             desktop::tray::build(app.handle())?;
             if let Ok(core) = app.state::<DesktopContext>().core() {
                 let status = tauri::async_runtime::block_on(core.service.status());
+                desktop::apply_theme(app.handle(), status.settings.theme);
                 desktop::tray::update(app.handle(), &status);
             }
             desktop::attach_state_events(app.handle());
@@ -93,8 +91,6 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
-            cmd::convert_ssr_to_clash,
-            cmd::parse_ssr_link_command,
             cmd::get_state,
             cmd::get_output_details,
             cmd::save_settings,
