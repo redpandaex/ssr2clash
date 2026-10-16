@@ -1,4 +1,5 @@
 pub mod cmd;
+pub mod conversion;
 pub mod model;
 pub mod preset;
 pub mod ssr;

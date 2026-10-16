@@ -105,6 +105,8 @@ pub struct GeneratedConfig {
     pub yaml: String,
     pub node_count: usize,
     pub group_count: usize,
+    #[serde(default)]
+    pub invalid_count: usize,
     pub warnings: Vec<String>,
     pub generated_at: String,
 }
