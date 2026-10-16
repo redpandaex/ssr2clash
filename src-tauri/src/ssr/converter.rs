@@ -1,5 +1,11 @@
-use crate::model::clash::{ClashConfig, ClashProxy};
+use crate::model::clash::{ClashConfig, ClashProxy, ClashProxyGroup};
 use crate::model::ssr::SsrNode;
+use crate::{
+    model::app::AppError,
+    preset::{model::ResolvedPreset, validate_config, BUILTIN_TARGETS},
+};
+use fancy_regex::RegexBuilder;
+use std::collections::HashSet;
 
 /// 转换 SSR 节点为 Clash 代理
 pub fn convert_ssr_to_clash_proxy(ssr: &SsrNode) -> ClashProxy {
@@ -22,19 +28,116 @@ pub fn convert_ssr_to_clash_proxy(ssr: &SsrNode) -> ClashProxy {
         } else {
             Some(ssr.protocol_param.clone())
         },
+        udp: true,
     }
 }
 
-/// 生成完整的 Clash 配置
-pub fn generate_clash_config(proxies: Vec<ClashProxy>) -> ClashConfig {
-    ClashConfig {
+pub fn build_clash_config(
+    nodes: &[SsrNode],
+    preset: &ResolvedPreset,
+    enable_udp: bool,
+) -> Result<ClashConfig, AppError> {
+    let mut used: HashSet<String> = BUILTIN_TARGETS
+        .iter()
+        .map(|value| (*value).into())
+        .chain(preset.groups.iter().map(|group| group.name.clone()))
+        .collect();
+    let mut nodes = nodes.to_vec();
+    for (index, node) in nodes.iter_mut().enumerate() {
+        let base = if node.remarks.trim().is_empty() {
+            format!("未命名节点 {}", index + 1)
+        } else {
+            node.remarks.trim().to_owned()
+        };
+        let mut name = base.clone();
+        let mut suffix = 2;
+        while used.contains(&name) {
+            name = format!("{base} ({suffix})");
+            suffix += 1;
+        }
+        used.insert(name.clone());
+        node.remarks = name;
+    }
+    let mut groups = Vec::new();
+    for definition in &preset.groups {
+        let mut members = Vec::new();
+        let mut seen = HashSet::new();
+        for selector in &definition.selectors {
+            if let Some(reference) = selector.strip_prefix("[]") {
+                if seen.insert(reference.to_owned()) {
+                    members.push(reference.to_owned());
+                }
+                continue;
+            }
+            let (source_group, pattern) = if let Some(filter) = selector.strip_prefix("!!GROUP=") {
+                let (group, pattern) = filter.split_once("!!").unwrap_or((filter, ".*"));
+                (Some(group), pattern)
+            } else if selector.starts_with("!!") {
+                return Err(AppError::new(
+                    "UnsupportedPresetOption",
+                    "不支持该节点选择条件",
+                ));
+            } else {
+                (None, selector.as_str())
+            };
+            let compile = |pattern: &str| {
+                RegexBuilder::new(pattern)
+                    .backtrack_limit(100_000)
+                    .build()
+                    .map_err(|_| {
+                        AppError::new(
+                            "InvalidRegex",
+                            format!("策略组「{}」的正则表达式无效", definition.name),
+                        )
+                    })
+            };
+            let regex = compile(pattern)?;
+            let source_regex = source_group.map(compile).transpose()?;
+            for node in &nodes {
+                let matches = regex
+                    .is_match(&node.remarks)
+                    .map_err(|_| AppError::new("InvalidRegex", "节点正则匹配超出执行限制"))?;
+                let group_matches = source_regex
+                    .as_ref()
+                    .map(|regex| regex.is_match(&node.group))
+                    .transpose()
+                    .map_err(|_| AppError::new("InvalidRegex", "来源组正则匹配失败"))?
+                    .unwrap_or(true);
+                if matches && group_matches && seen.insert(node.remarks.clone()) {
+                    members.push(node.remarks.clone());
+                }
+            }
+        }
+        groups.push(ClashProxyGroup {
+            name: definition.name.clone(),
+            group_type: definition.kind.clone(),
+            proxies: members,
+            url: definition.url.clone(),
+            interval: definition.interval,
+            timeout: definition.timeout,
+            tolerance: definition.tolerance,
+        });
+    }
+    let proxies = nodes
+        .iter()
+        .map(|node| {
+            let mut proxy = convert_ssr_to_clash_proxy(node);
+            proxy.udp = enable_udp;
+            proxy
+        })
+        .collect();
+    let config = ClashConfig {
         port: 7890,
         socks_port: 7891,
         allow_lan: false,
         mode: "rule".to_string(),
         log_level: "info".to_string(),
         proxies,
-    }
+        proxy_groups: groups,
+        rules: preset.rules.clone(),
+    };
+    validate_config(&config)?;
+    Ok(config)
 }
 
 #[cfg(test)]

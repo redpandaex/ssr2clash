@@ -82,8 +82,8 @@ assert!(parse_subscription("<html>Sign in</html>").is_err());
 
 **Interfaces:** `ResolvedPreset { groups: Vec<GroupDefinition>, rules: Vec<String> }`；`load_builtin_preset() -> Result<ResolvedPreset, AppError>`；`build_clash_config(nodes: &[SsrNode], preset: &ResolvedPreset, enable_udp: bool) -> Result<ClashConfig, AppError>`；`validate_config(&ClashConfig) -> Result<(), AppError>`。
 
-- [ ] **Step 1:** 固定一个可运行的 upstream subconverter 版本，以该版本 commit 固定默认配置和引用资源，并记录来源／许可证。用同一虚构 SSR 订阅生成对照输出；记录该版本实际支持 SSR 的 Clash 输出目标。测试比较组名称、顺序、成员身份和规则顺序；节点显示名可按 server／port／protocol 映射后比较，不把 emoji 显示差异当协议差异。
-- [ ] **Step 2:** 写并运行 `cargo test --manifest-path src-tauri/Cargo.toml --test default_preset`，要求先失败于缺失分组／规则或错误字段。核心断言：
+- [x] **Step 1:** 固定一个可运行的 upstream subconverter 版本，以该版本 commit 固定默认配置和引用资源，并记录来源／许可证。用同一虚构 SSR 订阅生成对照输出；记录该版本实际支持 SSR 的 Clash 输出目标。测试比较组名称、顺序、成员身份和规则顺序；节点显示名可按 server／port／protocol 映射后比较，不把 emoji 显示差异当协议差异。
+- [x] **Step 2:** 写并运行 `cargo test --manifest-path src-tauri/Cargo.toml --test default_preset`，要求先失败于缺失分组／规则或错误字段。核心断言：
 
 ```rust
 assert!(yaml.contains("proxy-groups:"));
@@ -93,9 +93,9 @@ assert_eq!(config.rules.last().unwrap(), "MATCH,🐟 漏网之鱼");
 assert_eq!(all_final_names.len(), unique_final_names.len());
 ```
 
-- [ ] **Step 3:** 用 `cargo add serde-saphyr` 迁移 YAML、移除 serde_yaml；通过 Cargo 添加 fancy-regex 处理节点选择表达式。实现组模型、`udp` 输出、稳定唯一命名、保留声明顺序的规则生成和校验。DIRECT／REJECT 与所有组名参与节点名保留检查。`IP-CIDR,...,no-resolve` 的策略名插在 no-resolve 前。
-- [ ] **Step 4:** 验证默认资源断网可用；测试空地区匹配仍有 DIRECT／有效组候选，空测速组、未知组、循环引用和重名组给出错误；重跑默认对照测试与 Rust 全部测试。
-- [ ] **Step 5:** 提交转换器、资源、来源记录与测试，提交信息 `feat: generate complete Clash groups and routing rules`。
+- [x] **Step 3:** 用 `cargo add serde-saphyr` 迁移 YAML、移除 serde_yaml；通过 Cargo 添加 fancy-regex 处理节点选择表达式。实现组模型、`udp` 输出、稳定唯一命名、保留声明顺序的规则生成和校验。DIRECT／REJECT 与所有组名参与节点名保留检查。`IP-CIDR,...,no-resolve` 的策略名插在 no-resolve 前。
+- [x] **Step 4:** 验证默认资源断网可用；测试空地区匹配仍有 DIRECT／有效组候选，空测速组、未知组、循环引用和重名组给出错误；重跑默认对照测试与 Rust 全部测试。
+- [x] **Step 5:** 提交转换器、资源、来源记录与测试，提交信息 `feat: generate complete Clash groups and routing rules`。
 
 ## Task 3: 可复用获取器与常用 INI 导入
 
