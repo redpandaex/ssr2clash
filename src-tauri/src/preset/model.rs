@@ -75,8 +75,9 @@ impl GroupDefinition {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ResolvedPreset {
     pub groups: Vec<GroupDefinition>,
     pub rules: Vec<String>,
+    pub base: serde_json::Map<String, serde_json::Value>,
 }

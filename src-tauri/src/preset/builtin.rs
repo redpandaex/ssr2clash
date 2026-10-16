@@ -15,7 +15,11 @@ pub fn load_builtin_preset() -> Result<ResolvedPreset, AppError> {
             let rules =
                 serde_json::from_str(include_str!("../../resources/presets/default/rules.json"))
                     .map_err(|_| AppError::new("InvalidBuiltinPreset", "内置规则资源无效"))?;
-            Ok(ResolvedPreset { groups, rules })
+            Ok(ResolvedPreset {
+                groups,
+                rules,
+                base: serde_json::Map::new(),
+            })
         })
         .clone()
 }
