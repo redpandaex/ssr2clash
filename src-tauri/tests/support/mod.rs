@@ -1,5 +1,7 @@
 use base64::{engine::general_purpose, Engine};
 #[allow(dead_code)]
+pub mod store;
+#[allow(dead_code)]
 pub mod upstream;
 
 #[allow(dead_code)]

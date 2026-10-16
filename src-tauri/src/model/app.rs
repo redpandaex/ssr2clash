@@ -154,3 +154,28 @@ impl SavedState {
         }
     }
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RuntimeLogEntry {
+    pub id: u64,
+    pub at: String,
+    pub level: String,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CoreStatus {
+    pub settings: AppSettings,
+    pub revision: u64,
+    pub mode: OutputMode,
+    pub server_running: bool,
+    pub refreshing: bool,
+    pub subscription_url: Option<String>,
+    pub active_result: Option<GeneratedConfig>,
+    pub last_request_at: Option<String>,
+    pub last_error: Option<String>,
+    pub served_stale: bool,
+    pub logs: Vec<RuntimeLogEntry>,
+}
