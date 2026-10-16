@@ -87,12 +87,19 @@ impl ServerController {
 
     pub async fn stop(&self) -> Result<(), AppError> {
         let controller = self.clone();
-        tokio::spawn(async move { controller.stop_owned().await })
+        tokio::spawn(async move { controller.stop_owned(true).await })
             .await
             .map_err(|_| AppError::new("InternalTask", "停止服务任务未能完成"))?
     }
 
-    async fn stop_owned(&self) -> Result<(), AppError> {
+    pub async fn shutdown(&self) -> Result<(), AppError> {
+        let controller = self.clone();
+        tokio::spawn(async move { controller.stop_owned(false).await })
+            .await
+            .map_err(|_| AppError::new("InternalTask", "退出服务任务未能完成"))?
+    }
+
+    async fn stop_owned(&self, clear_intent: bool) -> Result<(), AppError> {
         let mut current = self.running.lock().await;
         if let Some(mut running) = current.take() {
             running.accepting.store(false, Ordering::Release);
@@ -110,7 +117,9 @@ impl ServerController {
             self.service.cancel_refreshes().await;
         }
         // A failed disk write must still leave the actual listener stopped.
-        self.service.set_service_enabled(false).await?;
+        if clear_intent {
+            self.service.set_service_enabled(false).await?;
+        }
         Ok(())
     }
 }

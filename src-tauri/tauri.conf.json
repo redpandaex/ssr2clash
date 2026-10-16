@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "ssr2clash",
+  "productName": "SSR2Clash",
   "version": "1.0.0",
   "identifier": "com.redpandaex.ssr2clash",
   "build": {
@@ -12,13 +12,17 @@
   "app": {
     "windows": [
       {
-        "title": "ssr2clash",
-        "width": 1400,
-        "height": 800
+        "title": "SSR2Clash",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 1000,
+        "minHeight": 700,
+        "visible": false
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'",
+      "devCsp": null
     }
   },
   "bundle": {
