@@ -170,11 +170,11 @@ assert_eq!(service.status().await.active_result, old_result); // 保存失败后
 
 **Interfaces:** `ServerController::new(service: Arc<AppService>) -> Self`；async `start(port: u16) -> Result<(), AppError>`、`stop() -> Result<(), AppError>`；绑定 127.0.0.1。start 绑定成功且开启意图保存成功后才报告运行；若保存失败，释放新监听。stop 取消 HTTP 刷新，有界退出并保存关闭意图。
 
-- [ ] **Step 1:** 基于真实临时 TCP 端口和可计数假上游写失败测试：GET／HEAD／health、错误令牌、快照重复请求、回退、无缓存 502、端口占用、限流和停止释放。测试 start(0) 仅供测试自动分配端口，生产 settings 仍默认 25501。
-- [ ] **Step 2:** 运行 `cargo test --manifest-path src-tauri/Cargo.toml --test local_server`，确认新端点未实现。
-- [ ] **Step 3:** 添加 Axum，路由 `/sub/{token}.yaml` 和 `/health`；HEAD 单独读取当前结果的头信息，不调用刷新逻辑。设置 YAML Content-Type、Content-Disposition、no-store；失败返回非 200 文本，错误令牌 404。实时入口用 2 个 permit，超限 503、Retry-After: 1。增加服务内部的 `mark_server_running(bool)` 方法，只由 ServerController 更新实际监听状态，不能用持久化开启意图冒充正在运行。
-- [ ] **Step 4:** 断言两次实时 GET hits 为 2，快照 GET hits 不增加且字节相同，HEAD hits 不增加；同时占满两个慢请求时第三个返回 503。启动／停止可重复，运行时改端口返回 `ServerMustStop`，停止后端口可重新绑定；没有配置的服务启动返回 `InvalidSourceUrl`。
-- [ ] **Step 5:** 提交 HTTP 服务与测试，提交信息 `feat: serve local Clash subscriptions over HTTP`。
+- [x] **Step 1:** 基于真实临时 TCP 端口和可计数假上游写失败测试：GET／HEAD／health、错误令牌、快照重复请求、回退、无缓存 502、端口占用、限流和停止释放。测试 start(0) 仅供测试自动分配端口，生产 settings 仍默认 25501。
+- [x] **Step 2:** 运行 `cargo test --manifest-path src-tauri/Cargo.toml --test local_server`，确认新端点未实现。
+- [x] **Step 3:** 添加 Axum，路由 `/sub/{token}.yaml` 和 `/health`；HEAD 单独读取当前结果的头信息，不调用刷新逻辑。设置 YAML Content-Type、Content-Disposition、no-store；失败返回非 200 文本，错误令牌 404。AppService 统一限制最多两个实际转换任务，超限 503、Retry-After: 1，HTTP 断开不能提前释放额度。增加服务内部的 `mark_server_running(Option<u16>)` 方法，由 ServerController 写入真实绑定端口（含测试的动态端口），不能用持久化开启意图冒充正在运行。
+- [x] **Step 4:** 断言两次实时 GET hits 为 2，快照 GET hits 不增加且字节相同，HEAD hits 不增加；同时占满两个慢请求时第三个返回 503。启动／停止可重复，运行时改端口返回 `ServerMustStop`，停止后端口可重新绑定；没有配置的服务启动返回 `InvalidSourceUrl`。
+- [x] **Step 5:** 提交 HTTP 服务与测试，提交信息 `feat: serve local Clash subscriptions over HTTP`。
 
 ## Task 8: Tauri 命令、托盘、单实例和自启
 
