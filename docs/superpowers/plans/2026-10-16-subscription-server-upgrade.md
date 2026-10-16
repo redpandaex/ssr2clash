@@ -44,7 +44,7 @@ Rust 沿用 `src-tauri/src/model.rs`、`ssr.rs` 的模块入口；新增模块�
 - `PresetSource`：`Builtin`、`LocalIni { path: PathBuf }`、`RemoteIni { url: String }`；JSON 使用 `kind` 标签，值为 `builtin`／`localIni`／`remoteIni`。
 - `AppSettings { profile: ProfileConfig, port: u16, close_to_tray: bool, fetch_proxy: FetchProxy, theme: Theme }`；`FetchProxy` 为 Direct／System，Theme 为 Light／Dark／System。
 - `OutputMode`：Live／Snapshot，JSON 为 `live`／`snapshot`。
-- `GeneratedConfig { config_revision: u64, yaml: String, node_count: usize, group_count: usize, warnings: Vec<String>, generated_at: String }`；时间为 UTC RFC3339。
+- `GeneratedConfig { config_revision: u64, yaml: String, node_count: usize, group_count: usize, invalid_count: usize, warnings: Vec<String>, generated_at: String }`；时间为 UTC RFC3339。
 - `SavedState { schema_version: u32, revision: u64, subscription_token: String, settings: AppSettings, mode: OutputMode, service_enabled: bool, last_good: Option<GeneratedConfig>, frozen: Option<GeneratedConfig> }`；格式版本 1。
 - `AppError { code: String, message: String }`；前端依赖稳定 code，message 必须脱敏。
 - `CoreStatus { settings: AppSettings, revision: u64, mode: OutputMode, server_running: bool, subscription_url: Option<String>, active_result: Option<GeneratedConfig>, last_request_at: Option<String>, last_error: Option<String>, served_stale: bool }`。
@@ -123,13 +123,13 @@ assert_eq!(error.code, "UnsupportedPresetOption");
 
 **Files:** Create `src-tauri/src/conversion.rs`、`tests/conversion_pipeline.rs`；Modify `src-tauri/src/lib.rs`、`cmd.rs`、`Cargo.toml`、`Cargo.lock`。
 
-**Interfaces:** `#[async_trait] trait Converter: Send + Sync { async fn generate(&self, profile: ProfileConfig, revision: u64) -> Result<ConversionResult, AppError>; }`；`ConversionEngine` 实现该接口。`ConversionResult { output: GeneratedConfig, details: OutputDetails }`；engine 依次获取、解析、过滤、解析预设、生成、校验、序列化。
+**Interfaces:** `#[async_trait] trait Converter: Send + Sync { async fn generate(&self, profile: ProfileConfig, revision: u64, fetch_proxy: FetchProxy) -> Result<ConversionResult, AppError>; }`；`ConversionEngine` 实现该接口。`ConversionResult { output: GeneratedConfig, details: OutputDetails }`；engine 依次获取、解析、过滤、解析预设、生成、校验、序列化。代理模式按调用传入，后续设置变化不会遗留固定客户端。
 
-- [ ] **Step 1:** 对本地假上游写完整流水线失败测试。两节点、十组的样本必须断言真实节点数为 2、组数为 10；故意返回 200 HTML、全坏节点、过滤为空和缺远程规则时必须失败。
-- [ ] **Step 2:** 运行 `cargo test --manifest-path src-tauri/Cargo.toml --test conversion_pipeline`，确认在接口／计数／无效内容断言处失败。
-- [ ] **Step 3:** 实现 `ConversionEngine` 与共享类型，通过 Cargo 添加 async-trait 与时间处理依赖。生成时间用 UTC RFC3339，按最终结构计数。旧手动命令临时调用该公共核心或同一纯转换函数，删除重复前端统计所依赖的后端歧义。
-- [ ] **Step 4:** 用 `serde_saphyr::from_str::<ClashConfig>(&result.output.yaml)` 回读并校验，断言 config_revision 原样为传入值；两次 generate 各增加一次上游 hits；所有错误做脱敏断言。
-- [ ] **Step 5:** 提交核心与测试，提交信息 `feat: centralize subscription conversion in Rust`。
+- [x] **Step 1:** 对本地假上游写完整流水线失败测试。两节点、十组的样本必须断言真实节点数为 2、组数为 10；故意返回 200 HTML、全坏节点、过滤为空和缺远程规则时必须失败。
+- [x] **Step 2:** 运行 `cargo test --manifest-path src-tauri/Cargo.toml --test conversion_pipeline`，确认在接口／计数／无效内容断言处失败。
+- [x] **Step 3:** 实现 `ConversionEngine` 与共享类型，通过 Cargo 添加 async-trait 与时间处理依赖。生成时间用 UTC RFC3339，按最终结构计数。旧手动命令临时调用该公共核心或同一纯转换函数，删除重复前端统计所依赖的后端歧义。
+- [x] **Step 4:** 用 `serde_saphyr::from_str::<ClashConfig>(&result.output.yaml)` 回读并校验，断言 config_revision 原样为传入值；两次 generate 各增加一次上游 hits；所有错误做脱敏断言。
+- [x] **Step 5:** 提交核心与测试，提交信息 `feat: centralize subscription conversion in Rust`。
 
 ## Task 5: 便携／安装数据目录与原子持久化
 
