@@ -213,11 +213,11 @@ expect(screen.getByText('2 个节点')).toBeVisible(); // 不把 10 个策略组
 
 **Interfaces:** 从设计目录中的两端连接 SVG 确定源图，采用石墨／白／蓝配色；产品显示名 SSR2Clash，副标题“订阅转换与本地托管”。只替换展示资源，保留既有应用标识与文件名。
 
-- [ ] **Step 1:** 查看 `docs/superpowers/assets/ssr2clash-icon-concept.svg` 与 PNG，按最终审阅方向生成正式 SVG；托盘保持同一轮廓的单色透明图形。此项不为颜色值或静态 SVG 路径增加镜像单元测试。
-- [ ] **Step 2:** 运行 `pnpm tauri icon assets/branding/icon.svg --output src-tauri/icons`，使用官方 CLI 生成平台图标；生成供托盘直接读取的浅／深主题小尺寸 PNG。
-- [ ] **Step 3:** 检查 PNG 为 RGBA 正方形、ICO 包含 16／24／32／48／64／256 尺寸，肉眼查看 16／24／32 像素下识别度；窗口、任务栏、托盘和 UI 都加载新图标。
-- [ ] **Step 4:** 重跑前端打包和 Rust 检查，并确认安装器、快捷方式的图标来源已指向生成资源，不保留默认 Tauri 标志。实际安装后的壳图标由任务 11 验证。
-- [ ] **Step 5:** 提交正式源图与生成资源，提交信息 `feat: refresh SSR2Clash application identity`。
+- [x] **Step 1:** 查看 `docs/superpowers/assets/ssr2clash-icon-concept.svg` 与 PNG，按最终审阅方向生成正式 SVG；托盘保持同一轮廓的单色透明图形。此项不为颜色值或静态 SVG 路径增加镜像单元测试。
+- [x] **Step 2:** 运行 `pnpm tauri icon assets/branding/icon.svg --output src-tauri/icons`，使用官方 CLI 生成平台图标；生成供托盘直接读取的浅／深主题小尺寸 PNG。
+- [x] **Step 3:** 检查 PNG 为 RGBA 正方形、ICO 包含 16／24／32／48／64／256 尺寸，肉眼查看 16／24／32 像素下识别度；窗口、任务栏、托盘和 UI 都加载新图标。
+- [x] **Step 4:** 重跑前端打包和 Rust 检查，并确认安装器、快捷方式的图标来源已指向生成资源，不保留默认 Tauri 标志。实际安装后的壳图标由任务 11 验证。
+- [x] **Step 5:** 提交正式源图与生成资源，提交信息 `feat: refresh SSR2Clash application identity`。
 
 ## Task 11: 双版本打包、可选路径与交付验证
 
