@@ -11,6 +11,28 @@ struct TrayMenu {
     stop: MenuItem<tauri::Wry>,
 }
 
+fn system_icon() -> tauri::Result<tauri::image::Image<'static>> {
+    #[cfg(windows)]
+    let light = windows_registry::CURRENT_USER
+        .open(r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize")
+        .and_then(|key| key.get_u32("SystemUsesLightTheme"))
+        .map(|value| value != 0)
+        .unwrap_or(false);
+    #[cfg(not(windows))]
+    let light = false;
+    tauri::image::Image::from_bytes(if light {
+        include_bytes!("../../icons/tray-light/32x32.png")
+    } else {
+        include_bytes!("../../icons/tray-dark/32x32.png")
+    })
+}
+
+pub fn refresh_icon(app: &AppHandle) {
+    if let (Some(tray), Ok(icon)) = (app.tray_by_id("main-tray"), system_icon()) {
+        let _ = tray.set_icon(Some(icon));
+    }
+}
+
 pub fn build(app: &AppHandle) -> tauri::Result<()> {
     let show = MenuItem::with_id(app, "show", "打开 SSR2Clash", true, None::<&str>)?;
     let initialized = app.state::<DesktopContext>().core().is_ok();
@@ -19,7 +41,9 @@ pub fn build(app: &AppHandle) -> tauri::Result<()> {
     let quit = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
     let menu = Menu::with_items(app, &[&show, &start, &stop, &separator, &quit])?;
-    let mut builder = TrayIconBuilder::with_id("main-tray")
+    let builder = TrayIconBuilder::with_id("main-tray")
+        .icon(system_icon()?)
+        .icon_as_template(true)
         .tooltip("SSR2Clash · 订阅转换与本地托管")
         .menu(&menu)
         .show_menu_on_left_click(false)
@@ -62,15 +86,13 @@ pub fn build(app: &AppHandle) -> tauri::Result<()> {
             }
             _ => {}
         });
-    if let Some(icon) = app.default_window_icon() {
-        builder = builder.icon(icon.clone());
-    }
     builder.build(app)?;
     app.manage(TrayMenu { start, stop });
     Ok(())
 }
 
 pub fn update(app: &AppHandle, status: &CoreStatus) {
+    refresh_icon(app);
     if let Some(menu) = app.try_state::<TrayMenu>() {
         let _ = menu
             .start
