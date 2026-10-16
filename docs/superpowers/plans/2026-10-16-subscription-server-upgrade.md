@@ -99,11 +99,13 @@ assert_eq!(all_final_names.len(), unique_final_names.len());
 
 ## Task 3: 可复用获取器与常用 INI 导入
 
-**Files:** Create `src-tauri/src/subscription/http.rs`、`preset/ini.rs`、`preset/resolve.rs`、`tests/preset_import.rs`、`tests/support/upstream.rs`；Modify 模块入口与 `Cargo.toml`／lockfile。
+**Files:** Create `src-tauri/src/subscription/http.rs`、`preset/ini.rs`、`preset/resolve.rs`、`preset/rules.rs`、`tests/preset_import.rs`、`tests/support/upstream.rs`；Modify 模块入口、`model/clash.rs`、`preset/model.rs`、`ssr/converter.rs` 与 `Cargo.toml`／lockfile。
 
 **Interfaces:** `HttpFetcher::new(proxy: FetchProxy) -> Result<Self, AppError>`；`async fn get_text(&self, url: &str) -> Result<String, AppError>`；`async fn resolve_preset(source: &PresetSource, fetcher: &HttpFetcher) -> Result<ResolvedPreset, AppError>`。
 
-- [ ] **Step 1:** 创建可计数的本地假上游 `TestUpstream`，提供 `url(path)`、`hits(path)`、`set_response(path,status,body)` 和可等待的阻塞响应。写 INI 测试：重复键与规则顺序、正则、`[]` 引用、`!!GROUP=`、相对导入、远程规则、循环／越界路径、失败资源。断言：
+实现裁定：ResolvedPreset 增加 `base: serde_json::Map<String, serde_json::Value>`，ClashConfig 以 flatten extra 保留普通 YAML 基础配置的非节点字段；这是正确兑现规则生成开关所需的接口补充。关闭生成时不获取未使用的规则列表。
+
+- [x] **Step 1:** 创建可计数的本地假上游 `TestUpstream`，提供 `url(path)`、`hits(path)`、`set_response(path,status,body)` 和可等待的阻塞响应。写 INI 测试：重复键与规则顺序、正则、`[]` 引用、`!!GROUP=`、相对导入、远程规则、循环／越界路径、失败资源。断言：
 
 ```rust
 assert_eq!(preset.groups.len(), 2);
@@ -112,10 +114,10 @@ assert_eq!(upstream.hits("/rules.list"), 1);
 assert_eq!(error.code, "UnsupportedPresetOption");
 ```
 
-- [ ] **Step 2:** 运行 `cargo test --manifest-path src-tauri/Cargo.toml --test preset_import`，确认新 resolver 缺失或相关案例失败。
-- [ ] **Step 3:** 通过 Cargo CLI 添加 Reqwest、Tokio、URL、fancy-regex 及实际需要的特性。实现 20 秒超时、无自动重试、直连／系统代理；原始响应限 8 MiB，导入总量限 16 MiB、深度限 8。INI 保留重复键、顺序与行号；支持 select／url-test／fallback／load-balance 的测速参数和常用规则列表，未知生效项报错。
-- [ ] **Step 4:** 验证 HTTP 非成功状态、HTML 响应、超限、正则错误、文件越界、远程配置企图读取本地路径均失败；错误信息不含带 query 的原始 URL。重跑导入与默认预设测试。
-- [ ] **Step 5:** 提交获取器、导入器与测试，提交信息 `feat: resolve local and remote subscription presets`。
+- [x] **Step 2:** 运行 `cargo test --manifest-path src-tauri/Cargo.toml --test preset_import`，确认新 resolver 缺失或相关案例失败。
+- [x] **Step 3:** 通过 Cargo CLI 添加 Reqwest、Tokio、URL、fancy-regex 及实际需要的特性。实现 20 秒超时、无自动重试、直连／系统代理；原始响应限 8 MiB，导入总量限 16 MiB、深度限 8。INI 保留重复键、顺序与行号；支持 select／url-test／fallback／load-balance 的测速参数和常用规则列表，未知生效项报错。
+- [x] **Step 4:** 验证 HTTP 非成功状态、HTML 响应、超限、正则错误、文件越界、远程配置企图读取本地路径均失败；错误信息不含带 query 的原始 URL。重跑导入与默认预设测试。
+- [x] **Step 5:** 提交获取器、导入器与测试，提交信息 `feat: resolve local and remote subscription presets`。
 
 ## Task 4: 统一转换流水线与结构化输出
 

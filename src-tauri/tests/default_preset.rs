@@ -128,12 +128,14 @@ fn source_group_selectors_and_invalid_regex_are_explicit() {
     let preset = ResolvedPreset {
         groups: vec![GroupDefinition::parse("测试组`select`!!GROUP=测试").unwrap()],
         rules: vec!["MATCH,测试组".into()],
+        ..ResolvedPreset::default()
     };
     let config = build_clash_config(&sample_nodes(), &preset, true).unwrap();
     assert_eq!(config.proxy_groups[0].proxies.len(), 2);
     let preset = ResolvedPreset {
         groups: vec![GroupDefinition::parse("测试组`select`[").unwrap()],
         rules: vec!["MATCH,测试组".into()],
+        ..ResolvedPreset::default()
     };
     assert_eq!(
         build_clash_config(&sample_nodes(), &preset, true)

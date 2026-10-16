@@ -50,4 +50,6 @@ pub struct ClashConfig {
     #[serde(rename = "proxy-groups")]
     pub proxy_groups: Vec<ClashProxyGroup>,
     pub rules: Vec<String>,
+    #[serde(flatten, default)]
+    pub extra: serde_json::Map<String, serde_json::Value>,
 }

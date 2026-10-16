@@ -1,4 +1,5 @@
 pub mod decode;
+pub mod http;
 use crate::{
     model::{app::AppError, ssr::SsrNode},
     ssr::parser::parse_ssr_link,

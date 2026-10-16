@@ -1,5 +1,8 @@
 use base64::{engine::general_purpose, Engine};
+#[allow(dead_code)]
+pub mod upstream;
 
+#[allow(dead_code)]
 pub fn ssr_link(server: &str, remarks: &str, group: &str, padding: bool) -> String {
     let encode = |value: &str| {
         if padding {

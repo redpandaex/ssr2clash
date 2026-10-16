@@ -31,3 +31,10 @@ tauri-plugin-shell = "2"
 percent-encoding = "2.3.2"
 serde-saphyr = "2.0.0"
 fancy-regex = "0.19.2"
+reqwest = { version = "0.13.5", default-features = false, features = ["native-tls", "gzip", "brotli", "deflate", "system-proxy", "charset"] }
+tokio = { version = "1.53.3", features = ["rt-multi-thread", "macros", "net", "sync", "time", "io-util", "fs"] }
+url = "2.5.8"
+
+[dev-dependencies]
+tempfile = "3.27.0"
+tokio = { version = "1.53.3", features = ["test-util"] }

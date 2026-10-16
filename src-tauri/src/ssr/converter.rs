@@ -126,7 +126,7 @@ pub fn build_clash_config(
             proxy
         })
         .collect();
-    let config = ClashConfig {
+    let mut config = ClashConfig {
         port: 7890,
         socks_port: 7891,
         allow_lan: false,
@@ -135,7 +135,22 @@ pub fn build_clash_config(
         proxies,
         proxy_groups: groups,
         rules: preset.rules.clone(),
+        extra: serde_json::Map::new(),
     };
+    if !preset.base.is_empty() {
+        let mut document = serde_json::to_value(&config)
+            .map_err(|_| AppError::new("InvalidBaseConfig", "无法合并基础配置"))?;
+        for (key, value) in &preset.base {
+            if !matches!(key.as_str(), "proxies" | "proxy-groups" | "rules") {
+                document
+                    .as_object_mut()
+                    .unwrap()
+                    .insert(key.clone(), value.clone());
+            }
+        }
+        config = serde_json::from_value(document)
+            .map_err(|_| AppError::new("InvalidBaseConfig", "基础配置字段类型不兼容"))?;
+    }
     validate_config(&config)?;
     Ok(config)
 }
