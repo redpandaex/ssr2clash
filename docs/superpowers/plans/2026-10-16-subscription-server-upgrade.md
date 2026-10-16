@@ -62,7 +62,7 @@ Rust 沿用 `src-tauri/src/model.rs`、`ssr.rs` 的模块入口；新增模块�
 
 **Interfaces:** 继续提供 `parse_ssr_link(&str) -> anyhow::Result<SsrNode>`；新增 `parse_subscription(&str) -> Result<ParsedSubscription, AppError>`，其中 `ParsedSubscription { nodes: Vec<SsrNode>, invalid_count: usize, warnings: Vec<String>, decoded_preview: String }`。测试辅助 `ssr_link(server: &str, remarks: &str, group: &str, padding: bool) -> String` 构造 example.invalid／test-password 虚构节点。
 
-- [ ] **Step 1:** 用 fixture helper 写失败用例，替换现有空解析测试。明文与外层包装分别覆盖标准／URL-safe、有／无 padding；增加 IPv6、中文备注、坏端口与混入坏节点。断言：
+- [x] **Step 1:** 用 fixture helper 写失败用例，替换现有空解析测试。明文与外层包装分别覆盖标准／URL-safe、有／无 padding；增加 IPv6、中文备注、坏端口与混入坏节点。断言：
 
 ```rust
 assert_eq!(parse_ssr_link(&ssr_link("[2001:db8::1]", "香港 01", "测试", true))?.remarks, "香港 01");
@@ -71,10 +71,10 @@ assert_eq!(parse_subscription(&mixed_content)?.invalid_count, 1);
 assert!(parse_subscription("<html>Sign in</html>").is_err());
 ```
 
-- [ ] **Step 2:** 运行 `cargo test --manifest-path src-tauri/Cargo.toml --test subscription_decode`，确认在新 API 不存在或 padding／IPv6 用例处失败。
-- [ ] **Step 3:** 实现统一 Base64／UTF-8 处理；SSR 主体从右侧划分固定字段，保留 IPv6 主机；参数解码不把普通 `+` 误变为空格。移除测试空壳，错误报告只含节点序号与原因。
-- [ ] **Step 4:** 重新运行上述测试及 `cargo test --manifest-path src-tauri/Cargo.toml --lib`，确认非空解析用例、现有过滤测试通过。
-- [ ] **Step 5:** 提交本项解析、模型与测试文件，提交信息 `fix: normalize SSR subscription decoding`。
+- [x] **Step 2:** 运行 `cargo test --manifest-path src-tauri/Cargo.toml --test subscription_decode`，确认在新 API 不存在或 padding／IPv6 用例处失败。
+- [x] **Step 3:** 实现统一 Base64／UTF-8 处理；SSR 主体从右侧划分固定字段，保留 IPv6 主机；参数解码不把普通 `+` 误变为空格。移除测试空壳，错误报告只含节点序号与原因。
+- [x] **Step 4:** 重新运行上述测试及 `cargo test --manifest-path src-tauri/Cargo.toml --lib`，确认非空解析用例、现有过滤测试通过。
+- [x] **Step 5:** 提交本项解析、模型与测试文件，提交信息 `fix: normalize SSR subscription decoding`。
 
 ## Task 2: 完整 YAML、默认分组与离线规则
 
