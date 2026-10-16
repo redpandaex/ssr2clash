@@ -194,8 +194,8 @@ assert_eq!(service.status().await.active_result, old_result); // 保存失败后
 
 **Interfaces:** `subscriptionApi` 导出 camelCase 函数 getState、getOutputDetails、saveSettings、refreshSubscription、setSnapshotEnabled、startServer、stopServer、setAutostartEnabled，对应任务 8 命令；`useAppState()` 提供 `{ view, output, pending, error, actions }`。UI 完全使用结构化输出，不扫描 YAML 统计节点。
 
-- [ ] **Step 1:** 复用任务 8 固定的 pnpm 入口，CI 使用同一版本。通过 CLI 升级 React 19、Vite 8、匹配的 React 插件、Tailwind 4、TypeScript／Biome 及 Tauri 2 JS 依赖；Node 类型对齐 Node 24。为实际 UI 行为添加 Vitest／Testing Library，`scripts.test` 设置为 `vitest run`，而非对配置版本写镜像测试。
-- [ ] **Step 2:** 写失败 UI 测试，使用类型化 API mock：空订阅禁用更新，快照无结果时不能开启，刷新失败仍显示旧结果与持续错误，冻结后输出编辑不可用，停止后状态更新，主题不改变服务配置。断言示例：
+- [x] **Step 1:** 复用任务 8 固定的 pnpm 入口，CI 使用同一版本。通过 CLI 升级 React 19、Vite 8、匹配的 React 插件、Tailwind 4、TypeScript／Biome 及 Tauri 2 JS 依赖；Node 类型对齐 Node 24。为实际 UI 行为添加 Vitest／Testing Library，`scripts.test` 设置为 `vitest run`，而非对配置版本写镜像测试。
+- [x] **Step 2:** 写失败 UI 测试，使用类型化 API mock：空订阅禁用更新，快照无结果时不能开启，刷新失败仍显示旧结果与持续错误，冻结后输出编辑不可用，停止后状态更新，主题不改变服务配置。断言示例：
 
 ```tsx
 expect(screen.getByRole('button', { name: '立即更新' })).toBeDisabled();
@@ -203,9 +203,9 @@ expect(screen.getByText('上次更新失败，正在使用之前的配置')).toB
 expect(screen.getByText('2 个节点')).toBeVisible(); // 不把 10 个策略组算成节点
 ```
 
-- [ ] **Step 3:** 运行 `pnpm test`，确认功能断言先失败；按页面概念稿实现银灰／钴蓝工作台，窄导航、顶部输入行、宽结果区与窄服务检查区。默认预设文案必须是“内置默认分流”，不是“不使用（直连）”。实际尺寸与文字以设计说明的可读性为准，不复制生成图的文字误差。
-- [ ] **Step 4:** 运行 `pnpm test`、`pnpm build` 与相关 lint；浏览器检查 1200×800、1000×700，浅／深色与空态／加载／失败／冻结态。键盘可达、中文不截断、长 YAML 和地址不撑宽；运行记录默认折叠且最多 100 条脱敏记录。保存失败时表单保留用户输入，不能自动覆盖成旧值。
-- [ ] **Step 5:** 在真实 Tauri 窗口验证 IPC、复制、导出、主题与后台事件；移除已经替代的旧页面和无引用业务组件后提交，提交信息 `feat: rebuild the subscription desktop workbench`。
+- [x] **Step 3:** 运行 `pnpm test`，确认功能断言先失败；按页面概念稿实现银灰／钴蓝工作台，窄导航、顶部输入行、宽结果区与窄服务检查区。默认预设文案必须是“内置默认分流”，不是“不使用（直连）”。实际尺寸与文字以设计说明的可读性为准，不复制生成图的文字误差。
+- [x] **Step 4:** 运行 `pnpm test`、`pnpm build` 与相关 lint；浏览器检查 1200×800、1000×700，浅／深色与空态／加载／失败／冻结态。键盘可达、中文不截断、长 YAML 和地址不撑宽；运行记录默认折叠且最多 100 条脱敏记录。保存失败时表单保留用户输入，不能自动覆盖成旧值。
+- [x] **Step 5:** 在真实 Tauri 窗口验证 IPC、复制、导出、主题与后台事件；移除已经替代的旧页面和无引用业务组件后提交，提交信息 `feat: rebuild the subscription desktop workbench`。
 
 ## Task 10: 原创图标与统一应用身份
 

@@ -116,6 +116,15 @@ pub fn show_window(app: &AppHandle) {
     }
 }
 
+pub fn apply_theme(app: &AppHandle, theme: crate::model::app::Theme) {
+    use crate::model::app::Theme;
+    app.set_theme(match theme {
+        Theme::Light => Some(tauri::Theme::Light),
+        Theme::Dark => Some(tauri::Theme::Dark),
+        Theme::System => None,
+    });
+}
+
 pub fn request_exit(app: &AppHandle) {
     let context = app.state::<DesktopContext>();
     if context.quitting.swap(true, Ordering::AcqRel) {
