@@ -1,5 +1,6 @@
 use crate::model::convert::ConvertConfig;
-use crate::ssr::converter::{convert_ssr_to_clash_proxy, generate_clash_config};
+use crate::preset::load_builtin_preset;
+use crate::ssr::converter::build_clash_config;
 use crate::ssr::filter::filter_nodes;
 use crate::ssr::parser::parse_ssr_link;
 
@@ -28,18 +29,13 @@ pub fn convert_ssr_to_clash(
         return Err("过滤后没有剩余节点".to_string());
     }
 
-    // 3. 转换为 Clash 代理
-    let clash_proxies: Vec<_> = filtered_nodes
-        .iter()
-        .map(convert_ssr_to_clash_proxy)
-        .collect();
-
-    // 4. 生成完整配置
-    let clash_config = generate_clash_config(clash_proxies);
+    let preset = load_builtin_preset().map_err(|error| error.to_string())?;
+    let clash_config = build_clash_config(&filtered_nodes, &preset, config.enable_udp)
+        .map_err(|error| error.to_string())?;
 
     // 5. 序列化为 YAML
     let yaml =
-        serde_yaml::to_string(&clash_config).map_err(|e| format!("生成 YAML 失败: {}", e))?;
+        serde_saphyr::to_string(&clash_config).map_err(|e| format!("生成 YAML 失败: {}", e))?;
 
     Ok(yaml)
 }

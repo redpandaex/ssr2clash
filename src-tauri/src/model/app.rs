@@ -97,3 +97,23 @@ impl Default for AppSettings {
         }
     }
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GeneratedConfig {
+    pub config_revision: u64,
+    pub yaml: String,
+    pub node_count: usize,
+    pub group_count: usize,
+    pub warnings: Vec<String>,
+    pub generated_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutputDetails {
+    pub yaml: String,
+    pub nodes: Vec<super::clash::ClashProxy>,
+    pub groups: Vec<super::clash::ClashProxyGroup>,
+    pub decoded_preview: Option<String>,
+}
