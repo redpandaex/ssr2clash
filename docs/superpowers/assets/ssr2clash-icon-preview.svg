@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360" viewBox="0 0 960 360">
+  <title>SSR2Clash icon and product name preview</title>
+  <defs>
+    <symbol id="app-icon" viewBox="0 0 512 512">
+      <rect x="24" y="24" width="464" height="464" rx="112" fill="#17213A"/>
+      <path d="M144 192H232C271 192 288 211 288 248V256" fill="none" stroke="#F5F8F6" stroke-width="40" stroke-linecap="round"/>
+      <path d="M288 256V264C288 301 305 320 344 320H368" fill="none" stroke="#6C93FF" stroke-width="40" stroke-linecap="round"/>
+      <circle cx="144" cy="192" r="34" fill="#F5F8F6"/>
+      <circle cx="368" cy="320" r="34" fill="#6C93FF"/>
+    </symbol>
+    <symbol id="tray-icon" viewBox="0 0 512 512">
+      <path d="M144 192H232C271 192 288 211 288 248V264C288 301 305 320 344 320H368" fill="none" stroke="currentColor" stroke-width="48" stroke-linecap="round"/>
+      <circle cx="144" cy="192" r="38" fill="currentColor"/>
+      <circle cx="368" cy="320" r="38" fill="currentColor"/>
+    </symbol>
+  </defs>
+  <rect width="960" height="360" fill="#F4F6FA"/>
+  <use href="#app-icon" x="48" y="52" width="256" height="256"/>
+  <g font-family="Segoe UI, Microsoft YaHei, sans-serif">
+    <text x="360" y="117" fill="#17213A" font-size="44" font-weight="600">SSR2Clash</text>
+    <text x="362" y="157" fill="#6B7280" font-size="20">订阅转换与本地托管</text>
+    <text x="362" y="222" fill="#6B7280" font-size="12" letter-spacing="2">APP ICON</text>
+    <use href="#app-icon" x="360" y="240" width="48" height="48"/>
+    <use href="#app-icon" x="430" y="248" width="32" height="32"/>
+    <use href="#app-icon" x="487" y="256" width="16" height="16"/>
+    <text x="580" y="222" fill="#6B7280" font-size="12" letter-spacing="2">TRAY ICON</text>
+    <rect x="580" y="240" width="154" height="48" rx="12" fill="#202635"/>
+    <use href="#tray-icon" x="596" y="244" width="40" height="40" color="#F5F8F6"/>
+    <use href="#tray-icon" x="652" y="252" width="24" height="24" color="#F5F8F6"/>
+    <use href="#tray-icon" x="700" y="256" width="16" height="16" color="#F5F8F6"/>
+  </g>
+</svg>
