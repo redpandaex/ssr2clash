@@ -1,6 +1,7 @@
 pub mod cmd;
 pub mod model;
 pub mod ssr;
+pub mod subscription;
 
 use cmd::{convert_ssr_to_clash, parse_ssr_link_command};
 
