@@ -265,3 +265,19 @@ async fn missing_source_refuses_to_start_without_leaving_a_listener() {
     assert_eq!(server.start(0).await.unwrap_err().code, "InvalidSourceUrl");
     assert!(!service.status().await.server_running);
 }
+
+#[tokio::test]
+async fn application_shutdown_releases_port_while_preserving_restore_intent() {
+    let (_, service, _, server, _) = fixture().await;
+    server.start(0).await.unwrap();
+    let url = service.status().await.subscription_url.unwrap();
+    let port = reqwest::Url::parse(&url).unwrap().port().unwrap();
+    server.shutdown().await.unwrap();
+    assert!(!service.status().await.server_running);
+    assert!(service.should_restore_service().await);
+    drop(
+        TcpListener::bind((std::net::Ipv4Addr::LOCALHOST, port))
+            .await
+            .unwrap(),
+    );
+}

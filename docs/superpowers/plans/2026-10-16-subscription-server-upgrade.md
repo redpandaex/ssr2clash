@@ -182,11 +182,11 @@ assert_eq!(service.status().await.active_result, old_result); // 保存失败后
 
 **Interfaces:** 命令 `get_state() -> AppView`、`get_output_details() -> OutputDetails`、`save_settings(settings: AppSettings) -> AppView`、`refresh_subscription() -> AppView`、`set_snapshot_enabled(enabled: bool) -> AppView`、`start_server() -> AppView`、`stop_server() -> AppView`、`set_autostart_enabled(enabled: bool) -> AppView` 均为 async `Result<_, AppError>`。事件 `app-state-changed` 仅通知重新读取状态，不发送原订阅内容。
 
-- [ ] **Step 1:** 用桌面策略纯函数测试 `--autostart` 隐藏启动、关闭窗口留托盘、明确退出停止、手动停止后的启动恢复行为；断言 autostart_enabled 取操作系统实际注册结果，注册失败不显示为开启。
-- [ ] **Step 2:** 运行 `cargo test --manifest-path src-tauri/Cargo.toml --test desktop_policy`，确认策略／接口尚未实现。
-- [ ] **Step 3:** 先解析实际 pnpm 入口，固定一份可工作的 pnpm 10 稳定版本并写入 packageManager；不能重复使用已知会触发隐式重装和 SQLite 错误的入口。随后通过 `pnpm tauri add autostart` 与 `pnpm tauri add single-instance` 安装官方插件。初始化时先确定数据目录，单实例插件保证整个应用身份只运行一个进程。后台服务由 Rust 管理，不依赖 WebView 持续运行。托盘菜单接同一服务动作。
-- [ ] **Step 4:** 命令注册、错误脱敏、权限最小化并通过 cargo check；在 Windows 实际验证关窗后 HTTP 仍可访问、第二次打开恢复窗口、退出释放端口、自启注册与取消。便携路径变动时展示真实注册状态并可重新注册，不擅自改系统其他启动项。
-- [ ] **Step 5:** 提交桌面集成，提交信息 `feat: integrate tray lifecycle and optional autostart`。
+- [x] **Step 1:** 用桌面策略纯函数测试 `--autostart` 隐藏启动、关闭窗口留托盘、明确退出停止、手动停止后的启动恢复行为；断言 autostart_enabled 取操作系统实际注册结果，注册失败不显示为开启。
+- [x] **Step 2:** 运行 `cargo test --manifest-path src-tauri/Cargo.toml --test desktop_policy`，确认策略／接口尚未实现。
+- [x] **Step 3:** 先解析实际 pnpm 入口，固定一份可工作的 pnpm 10 稳定版本并写入 packageManager；不能重复使用已知会触发隐式重装和 SQLite 错误的入口。随后通过 `pnpm tauri add autostart` 与 `pnpm tauri add single-instance` 安装官方插件。初始化时先确定数据目录，单实例插件保证整个应用身份只运行一个进程。后台服务由 Rust 管理，不依赖 WebView 持续运行。托盘菜单接同一服务动作。
+- [x] **Step 4:** 命令注册、错误脱敏、权限最小化并通过 cargo check；在 Windows 实际验证关窗后 HTTP 仍可访问、第二次打开恢复窗口、退出释放端口、自启注册与取消。便携路径变动时展示真实注册状态并可重新注册，不擅自改系统其他启动项。
+- [x] **Step 5:** 提交桌面集成，提交信息 `feat: integrate tray lifecycle and optional autostart`。
 
 ## Task 9: 现代桌面工作台与依赖升级
 
