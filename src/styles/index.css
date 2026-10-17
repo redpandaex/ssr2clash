@@ -641,9 +641,6 @@ pre {
 .nodes-table tr:last-child :where(td) {
 	border-bottom: 0;
 }
-.nodes-table tr:hover td {
-	background: var(--subtle);
-}
 .node-symbol {
 	display: inline-flex;
 	color: var(--blue-text);
@@ -1009,6 +1006,9 @@ summary::-webkit-details-marker {
 	padding: 12px 18px;
 	border-bottom: 1px solid var(--line);
 }
+.nodes-table tr:hover td {
+	background: var(--subtle);
+}
 .logs-table th,
 .logs-table time {
 	color: var(--muted);
@@ -1029,14 +1029,14 @@ summary::-webkit-details-marker {
 	text-align: center;
 	color: var(--muted);
 }
-.logs-panel .debug-preview {
-	margin: 0;
-	padding: 14px 18px;
-}
 .debug-preview {
 	border-top: 1px solid var(--line);
 	margin-top: 13px;
 	padding-top: 10px;
+}
+.logs-panel .debug-preview {
+	margin: 0;
+	padding: 14px 18px;
 }
 .debug-preview summary {
 	cursor: pointer;
