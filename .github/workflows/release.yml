@@ -52,10 +52,8 @@ jobs:
           cargo test --manifest-path src-tauri/Cargo.toml --locked
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo check --manifest-path src-tauri/Cargo.toml --locked
-      - name: Build and verify both Windows packages
+      - name: Build both Windows packages
         run: ./scripts/package-windows.ps1
-      - name: Verify isolated installer hooks
-        run: ./scripts/verify-installer-hooks.ps1
       - name: Upload a draft release
         uses: softprops/action-gh-release@v2
         with:

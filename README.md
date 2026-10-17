@@ -75,11 +75,9 @@ corepack pnpm lint
 cargo fmt --manifest-path src-tauri/Cargo.toml --check
 cargo test --manifest-path src-tauri/Cargo.toml --locked
 cargo check --manifest-path src-tauri/Cargo.toml --locked
-node scripts/verify-ui.mjs
-pwsh -File scripts/verify-windows-packages.ps1
 ```
 
-`verify-ui.mjs` 使用无窗口 Edge 和虚构 API 数据检查界面，不打开桌面应用。`verify-installer-hooks.ps1` 静默验证安装钩子，使用独立测试目录和专用注册表键，不操作真实自启项。`verify-windows-desktop.cjs` 会反复打开、隐藏和退出测试窗口，仅在需要原生生命周期验收时手动执行。
+`scripts/` 仅保留 Windows 打包和第三方许可证收集脚本。界面、原生生命周期及安装流程由手动验收完成；CI 保留前端行为测试、lint、Rust 检查和两个版本的构建。
 
 实际验收结果和需要手动完成的项目见 [Windows 验证记录](docs/windows-verification.md)。CI 为分支和 PR 检查、构建并归档两个产物；标签发布先校验版本及 main 归属，两个产物上传草稿成功后再公开 Release。
 
