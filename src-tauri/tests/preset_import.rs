@@ -222,14 +222,64 @@ async fn plain_yaml_base_obeys_generator_and_overwrite_switches() {
     );
     std::fs::write(&path, ini(true, false)).unwrap();
     assert_eq!(
-        resolve_preset(&source, &fetcher).await.unwrap().rules.len(),
-        4
+        resolve_preset(&source, &fetcher).await.unwrap().rules,
+        [
+            "DOMAIN,local.invalid,DIRECT",
+            "DOMAIN-SUFFIX,remote.invalid,Proxy",
+            "MATCH,Proxy"
+        ]
     );
     std::fs::write(&path, ini(true, true)).unwrap();
     let preset = resolve_preset(&source, &fetcher).await.unwrap();
     assert_eq!(
         preset.rules,
         ["DOMAIN-SUFFIX,remote.invalid,Proxy", "MATCH,Proxy"]
+    );
+}
+
+#[tokio::test]
+async fn appended_generated_rules_stay_reachable_before_one_final_rule() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("base.yaml"),
+        "rules:\n  - DOMAIN,local.invalid,DIRECT\n  - MATCH,DIRECT\n",
+    )
+    .unwrap();
+    let path = dir.path().join("main.ini");
+    std::fs::write(&path, "custom_proxy_group=Proxy`select`[]DIRECT\nclash_rule_base=base.yaml\nruleset=REJECT,[]DOMAIN-SUFFIX,example.com\nruleset=DIRECT,[]FINAL\n").unwrap();
+    let preset = resolve_preset(
+        &PresetSource::LocalIni { path },
+        &HttpFetcher::new(FetchProxy::Direct).unwrap(),
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        preset.rules,
+        [
+            "DOMAIN,local.invalid,DIRECT",
+            "DOMAIN-SUFFIX,example.com,REJECT",
+            "MATCH,DIRECT"
+        ]
+    );
+}
+
+#[tokio::test]
+async fn conflicting_base_and_generated_fallbacks_fail_explicitly_unless_overwritten() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(dir.path().join("base.yaml"), "rules:\n  - MATCH,DIRECT\n").unwrap();
+    let path = dir.path().join("main.ini");
+    let ini = "custom_proxy_group=Proxy`select`[]DIRECT\nclash_rule_base=base.yaml\nruleset=Proxy,[]FINAL\n";
+    let source = PresetSource::LocalIni { path: path.clone() };
+    let fetcher = HttpFetcher::new(FetchProxy::Direct).unwrap();
+    std::fs::write(&path, ini).unwrap();
+    assert_eq!(
+        resolve_preset(&source, &fetcher).await.unwrap_err().code,
+        "ConflictingFinalRule"
+    );
+    std::fs::write(&path, format!("{ini}overwrite_original_rules=true\n")).unwrap();
+    assert_eq!(
+        resolve_preset(&source, &fetcher).await.unwrap().rules,
+        ["MATCH,Proxy"]
     );
 }
 
@@ -278,7 +328,11 @@ async fn import_depth_and_total_resource_budget_are_bounded() {
     std::fs::write(&main, "custom_proxy_group=!!import:large0.txt\ncustom_proxy_group=!!import:large1.txt\ncustom_proxy_group=!!import:large2.txt\nruleset=Proxy,[]FINAL\n").unwrap();
     let padding = format!("#{}\nProxy`select`[]DIRECT\n", "x".repeat(6 * 1024 * 1024));
     for index in 0..3 {
-        std::fs::write(dir.path().join(format!("large{index}.txt")), &padding).unwrap();
+        std::fs::write(
+            dir.path().join(format!("large{index}.txt")),
+            padding.replace("Proxy`", &format!("Proxy{index}`")),
+        )
+        .unwrap();
     }
     assert_eq!(
         resolve_preset(&PresetSource::LocalIni { path: main }, &fetcher)
