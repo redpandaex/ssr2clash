@@ -1,5 +1,5 @@
-import type { OutputDetails, RuntimeLogEntry } from "@/lib/types";
 import { displayTime } from "@/components/workbench/ServiceInspector";
+import type { OutputDetails, RuntimeLogEntry } from "@/lib/types";
 
 const levelNames: Record<string, string> = {
 	info: "信息",
