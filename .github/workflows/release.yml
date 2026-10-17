@@ -2,78 +2,72 @@ name: Release
 
 on:
   push:
-    tags:
-      - "v*"
+    tags: ["v*"]
+
+permissions:
+  contents: read
 
 jobs:
-  release:
+  windows-release:
     permissions:
       contents: write
     runs-on: windows-latest
-
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
     steps:
-      - name: 检出代码
-        uses: actions/checkout@v4
-
-      - name: 安装 Node.js 24
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Validate version and main ancestry
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          if ($env:GITHUB_REF_NAME -ne "v$version") { throw 'Tag must match the application version' }
+          git merge-base --is-ancestor $env:GITHUB_SHA origin/main
+          if ($LASTEXITCODE -ne 0) { throw 'Release tag must point to a commit on main' }
+      - uses: actions/setup-node@v6
         with:
           node-version: "24"
-
-      - name: 启用 Corepack
-        run: corepack enable
-
-      - name: 安装 pnpm（通过 Corepack）
-        run: corepack prepare pnpm@latest --activate
-
-      - name: 获取 pnpm store 目录
-        shell: pwsh
+      - name: Use pinned pnpm
         run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $env:GITHUB_ENV
-
-      - name: 设置 pnpm 缓存
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: 安装 Rust
-        uses: dtolnay/rust-toolchain@stable
+          corepack enable
+          corepack prepare pnpm@10.34.7 --activate
+          corepack pnpm install --frozen-lockfile
+      - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
-
-      - name: Rust 缓存
-        uses: Swatinem/rust-cache@v2
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: "./src-tauri -> target"
-
-      - name: 安装前端依赖
-        run: pnpm install --frozen-lockfile
-
-      - name: 构建便携版 exe（无安装包）
-        run: pnpm tauri build
-
-      - name: 创建 GitHub Release
+          workspaces: "src-tauri -> target"
+      - name: Verify source
+        run: |
+          corepack pnpm test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          corepack pnpm lint
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo fmt --manifest-path src-tauri/Cargo.toml --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo test --manifest-path src-tauri/Cargo.toml --locked
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo check --manifest-path src-tauri/Cargo.toml --locked
+      - name: Build and verify both Windows packages
+        run: ./scripts/package-windows.ps1
+      - name: Verify isolated installer hooks
+        run: ./scripts/verify-installer-hooks.ps1
+      - name: Upload a draft release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          body: |
-            ## 📦 Windows 便携版
-
-            - **文件**：`ssr2clash.exe`
-            - **类型**：便携版（无需安装）
-            - **系统**：Windows 10 / 11 (64-bit)
-            - **说明**：首次运行如无法打开，请确认已安装 WebView2 Runtime
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 上传便携版 exe 到 Release
-        uses: softprops/action-gh-release@v2
-        with:
+          draft: true
+          fail_on_unmatched_files: true
+          generate_release_notes: true
           files: |
-            src-tauri/target/release/ssr2clash.exe
+            src-tauri/target/distribution/*_portable.zip
+            src-tauri/target/distribution/*_setup.exe
+            src-tauri/target/distribution/SHA256SUMS.txt
+            src-tauri/target/distribution/build-info.json
+      - name: Publish only after both uploads succeed
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit $env:GITHUB_REF_NAME --draft=false --repo $env:GITHUB_REPOSITORY

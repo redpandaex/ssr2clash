@@ -1,7 +1,7 @@
 [package]
 name = "ssr2clash"
-version = "1.0.0"
-description = "A Tauri App"
+version = "1.1.0"
+description = "SSR subscription conversion and local Clash hosting"
 authors = ["redpandaex"]
 edition = "2021"
 
