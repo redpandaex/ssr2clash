@@ -145,6 +145,62 @@ try {
 		await page.getByRole("button", { name: "复制 YAML", exact: true }).click();
 		assert.equal(await page.evaluate(() => window.testClipboard), config);
 	});
+	await scenario(
+		"workbench-source-reveal",
+		1200,
+		800,
+		populated(),
+		async (page) => {
+			const source = page.getByLabel("原订阅地址", { exact: true });
+			const address = "https://source.example.invalid/pasted-subscription";
+			await source.fill("");
+			await source.pressSequentially(address);
+			const cdp = await page.context().newCDPSession(page);
+			try {
+				await cdp.send("DOM.enable");
+				await cdp.send("CSS.enable");
+				const { root } = await cdp.send("DOM.getDocument", {
+					depth: -1,
+					pierce: true,
+				});
+				function findReveal(node) {
+					if (node.attributes?.includes("password-reveal")) return node;
+					for (const child of [
+						...(node.children ?? []),
+						...(node.shadowRoots ?? []),
+					]) {
+						const found = findReveal(child);
+						if (found) return found;
+					}
+				}
+				const reveal = findReveal(root);
+				assert.ok(reveal, "Edge created its native password reveal control");
+				const { computedStyle } = await cdp.send(
+					"CSS.getComputedStyleForNode",
+					{
+						nodeId: reveal.nodeId,
+					},
+				);
+				assert.equal(
+					computedStyle.find((property) => property.name === "display")?.value,
+					"none",
+					"native reveal control must be hidden when the custom toggle is present",
+				);
+			} finally {
+				await cdp.detach();
+			}
+			await page
+				.getByRole("button", { name: "显示原订阅地址", exact: true })
+				.click();
+			assert.equal(await source.getAttribute("type"), "text");
+			assert.equal(await source.inputValue(), address);
+			await page
+				.getByRole("button", { name: "隐藏原订阅地址", exact: true })
+				.click();
+			assert.equal(await source.getAttribute("type"), "password");
+			assert.equal(await source.inputValue(), address);
+		},
+	);
 } finally {
 	await browser.close();
 	await vite.close();
