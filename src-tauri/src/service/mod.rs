@@ -10,6 +10,7 @@ use crate::{
         },
         clash::ClashConfig,
     },
+    network,
     storage::Storage,
     subscription::http::parse_http_url,
 };
@@ -74,19 +75,29 @@ fn active(runtime: &Runtime) -> Option<&GeneratedConfig> {
 }
 
 fn status_of(runtime: &Runtime) -> CoreStatus {
+    let subscription_url = if runtime.saved.settings.profile.source_url.is_empty() {
+        None
+    } else {
+        let host = if runtime.saved.settings.allow_lan {
+            network::lan_ipv4_address()
+        } else {
+            Some(std::net::Ipv4Addr::LOCALHOST)
+        };
+        host.map(|host| {
+            format!(
+                "http://{host}:{}/sub/{}.yaml",
+                runtime.bound_port.unwrap_or(runtime.saved.settings.port),
+                runtime.saved.subscription_token
+            )
+        })
+    };
     CoreStatus {
         settings: runtime.saved.settings.clone(),
         revision: runtime.saved.revision,
         mode: runtime.saved.mode,
         server_running: runtime.bound_port.is_some(),
         refreshing: runtime.in_flight > 0,
-        subscription_url: (!runtime.saved.settings.profile.source_url.is_empty()).then(|| {
-            format!(
-                "http://127.0.0.1:{}/sub/{}.yaml",
-                runtime.bound_port.unwrap_or(runtime.saved.settings.port),
-                runtime.saved.subscription_token
-            )
-        }),
+        subscription_url,
         active_result: active(runtime).cloned(),
         last_request_at: runtime.last_request_at.clone(),
         last_error: runtime.last_error.clone(),
@@ -110,15 +121,13 @@ fn validate_source(settings: &AppSettings, required: bool) -> Result<(), AppErro
         };
     }
     let url = parse_http_url(&settings.profile.source_url)?;
-    if matches!(
-        url.host_str(),
-        Some("127.0.0.1" | "localhost" | "[::1]" | "::1")
-    ) && url.port_or_known_default() == Some(settings.port)
+    if url.host_str().is_some_and(network::is_local_host)
+        && url.port_or_known_default() == Some(settings.port)
         && url.path().starts_with("/sub/")
     {
         return Err(AppError::new(
             "SourceLoop",
-            "请填写原始订阅地址，不要填写本软件的本地订阅链接",
+            "请填写原始订阅地址，不要填写本软件的本机或局域网订阅链接",
         ));
     }
     Ok(())
@@ -214,10 +223,13 @@ impl AppService {
                     "请先关闭快照模式再修改输出配置",
                 ));
             }
-            if runtime.bound_port.is_some() && runtime.saved.settings.port != settings.port {
+            if runtime.bound_port.is_some()
+                && (runtime.saved.settings.port != settings.port
+                    || runtime.saved.settings.allow_lan != settings.allow_lan)
+            {
                 return Err(AppError::new(
                     "ServerMustStop",
-                    "请先停止本地服务再修改端口",
+                    "请先停止本地服务再修改端口或局域网访问设置",
                 ));
             }
             validate_source(&settings, runtime.bound_port.is_some())?;

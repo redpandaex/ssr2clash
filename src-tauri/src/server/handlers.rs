@@ -1,11 +1,13 @@
 use crate::{model::app::AppError, service::AppService};
 use axum::{
     body::Body,
-    extract::{Path, State},
+    extract::{ConnectInfo, Path, Request, State},
     http::{header, Response, StatusCode},
+    middleware::{from_fn, Next},
     routing::get,
     Router,
 };
+use std::net::{IpAddr, SocketAddr};
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
@@ -24,7 +26,23 @@ pub(super) fn router(service: Arc<AppService>, accepting: Arc<AtomicBool>) -> Ro
             get(|| async { ([(header::CACHE_CONTROL, "no-store")], "ok") }),
         )
         .route("/sub/{filename}", get(subscription).head(subscription_head))
+        .layer(from_fn(local_peers_only))
         .with_state(HttpState { service, accepting })
+}
+
+async fn local_peers_only(
+    ConnectInfo(peer): ConnectInfo<SocketAddr>,
+    request: Request,
+    next: Next,
+) -> Response<Body> {
+    let allowed = match peer.ip() {
+        IpAddr::V4(ip) => ip.is_loopback() || ip.is_private() || ip.is_link_local(),
+        IpAddr::V6(ip) => ip.is_loopback(),
+    };
+    if !allowed {
+        return text_response(StatusCode::FORBIDDEN, "仅支持本机或局域网访问");
+    }
+    next.run(request).await
 }
 
 async fn authorize(state: &HttpState, filename: &str) -> Result<(), Response<Body>> {

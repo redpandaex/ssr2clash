@@ -24,3 +24,9 @@ https://github.com/radix-ui/primitives
 https://github.com/lucide-icons/lucide
 Generated frontend license texts are in licenses/frontend-LICENSES.txt.
 Dependency versions are recorded in pnpm-lock.yaml and Cargo.lock in the source.
+
+Network interface discovery uses if-addrs 0.15.0:
+https://github.com/messense/if-addrs
+MIT license selected; included as licenses/if-addrs-MIT.txt.
+Opening the application data directory uses the official Tauri opener plugin
+under its MIT/Apache-2.0 terms; Tauri license texts are included above.

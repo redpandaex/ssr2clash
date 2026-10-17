@@ -12,7 +12,7 @@ foreach ($artifact in @($portable, $setup)) {
     if (-not (Test-Path -LiteralPath $artifact -PathType Leaf)) { throw "Missing artifact: $artifact" }
     if ((Get-Item -LiteralPath $artifact).Length -eq 0) { throw "Empty artifact: $artifact" }
 }
-$expectedFiles = @('ssr2clash.exe', 'portable.flag', 'README.txt', 'THIRD-PARTY-NOTICES.txt', 'licenses/subconverter-GPL-3.0.txt', 'licenses/tauri-MIT.txt', 'licenses/tauri-APACHE-2.0.txt', 'licenses/geist-OFL-1.1.txt', 'licenses/geist-mono-OFL-1.1.txt', 'licenses/frontend-LICENSES.txt')
+$expectedFiles = @('ssr2clash.exe', 'portable.flag', 'README.txt', 'THIRD-PARTY-NOTICES.txt', 'licenses/subconverter-GPL-3.0.txt', 'licenses/tauri-MIT.txt', 'licenses/tauri-APACHE-2.0.txt', 'licenses/geist-OFL-1.1.txt', 'licenses/geist-mono-OFL-1.1.txt', 'licenses/frontend-LICENSES.txt', 'licenses/if-addrs-MIT.txt')
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $archive = [IO.Compression.ZipFile]::OpenRead($portable)
 $temporaryRoot = Join-Path $outputRoot ("verify-" + [guid]::NewGuid().ToString('N'))

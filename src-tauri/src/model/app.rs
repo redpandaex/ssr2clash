@@ -82,6 +82,7 @@ impl Default for ProfileConfig {
 pub struct AppSettings {
     pub profile: ProfileConfig,
     pub port: u16,
+    pub allow_lan: bool,
     pub close_to_tray: bool,
     pub fetch_proxy: FetchProxy,
     pub theme: Theme,
@@ -91,6 +92,7 @@ impl Default for AppSettings {
         Self {
             profile: ProfileConfig::default(),
             port: 25501,
+            allow_lan: false,
             close_to_tray: true,
             fetch_proxy: FetchProxy::Direct,
             theme: Theme::System,
