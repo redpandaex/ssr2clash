@@ -1,7 +1,6 @@
 import {
 	AlertCircle,
 	ArrowUpRight,
-	FileCode2,
 	LayoutDashboard,
 	Play,
 	Settings2,
@@ -79,7 +78,6 @@ function WorkbenchContent({
 	const [settingsOpen, setSettingsOpen] = useState(false);
 	const settingsOpener = useRef<HTMLElement | null>(null);
 	const [tab, setTab] = useState<OutputTab>("nodes");
-	const [nav, setNav] = useState("workbench");
 	const core = view.core;
 	const frozen = core.mode === "snapshot";
 	const busy = !!pending;
@@ -93,11 +91,6 @@ function WorkbenchContent({
 	async function refresh() {
 		if (dirty && !(await actions.saveSettings(draft))) return;
 		await actions.refresh();
-	}
-	function focusOutput() {
-		setNav("output");
-		setTab("yaml");
-		document.getElementById("output-workspace")?.focus();
 	}
 	const warning = core.lastError && core.activeResult;
 	const operationError =
@@ -120,23 +113,12 @@ function WorkbenchContent({
 				<nav aria-label="主导航">
 					<button
 						type="button"
-						className={nav === "workbench" ? "active" : ""}
-						aria-current={nav === "workbench" ? "page" : undefined}
-						onClick={() => {
-							setNav("workbench");
-							setTab("nodes");
-						}}
+						className="active"
+						aria-current="page"
+						onClick={() => setTab("nodes")}
 					>
 						<LayoutDashboard size={18} />
 						<span>工作台</span>
-					</button>
-					<button
-						type="button"
-						className={nav === "output" ? "active" : ""}
-						onClick={focusOutput}
-					>
-						<FileCode2 size={18} />
-						<span>输出预览</span>
 					</button>
 					<button type="button" aria-label="打开设置" onClick={openSettings}>
 						<Settings2 size={18} />

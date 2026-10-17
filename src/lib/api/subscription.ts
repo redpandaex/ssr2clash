@@ -29,8 +29,14 @@ export const listenStateChanged = (handler: () => void) =>
 	isTauri() ? listen("app-state-changed", handler) : Promise.resolve(() => {});
 export const copyText = (value: string) => navigator.clipboard.writeText(value);
 export async function exportYaml(yaml: string) {
+	const now = new Date();
+	const date = [
+		now.getFullYear(),
+		String(now.getMonth() + 1).padStart(2, "0"),
+		String(now.getDate()).padStart(2, "0"),
+	].join("-");
 	const path = await save({
-		defaultPath: "subscription.yaml",
+		defaultPath: `${date}.yaml`,
 		filters: [{ name: "Clash 配置", extensions: ["yaml", "yml"] }],
 	});
 	if (path) await writeTextFile(path, yaml);

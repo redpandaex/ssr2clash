@@ -428,6 +428,10 @@ pre {
 .source-input-wrap .icon-button {
 	margin-right: 2px;
 }
+/* WebView2 supplies its own eye; this field already has a reveal button. */
+.source-input-wrap input::-ms-reveal {
+	display: none;
+}
 .filter-row {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
