@@ -49,7 +49,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo check --manifest-path src-tauri/Cargo.toml --locked
       - name: Build both Windows packages
-        run: ./scripts/package-windows.ps1
+        run: corepack pnpm package:windows
       - uses: actions/upload-artifact@v7
         with:
           name: ssr2clash-windows-x64-${{ github.sha }}

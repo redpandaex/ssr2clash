@@ -12,7 +12,8 @@
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
 		"format": "biome format --write .",
-		"test": "vitest run"
+		"test": "vitest run",
+		"package:windows": "pwsh -NoProfile -File scripts/package-windows.ps1"
 	},
 	"dependencies": {
 		"@fontsource-variable/geist": "^5.3.0",

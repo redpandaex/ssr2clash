@@ -61,7 +61,7 @@ corepack pnpm tauri dev
 生成两个 Windows 版本：
 
 ```powershell
-pwsh -File scripts/package-windows.ps1
+corepack pnpm package:windows
 ```
 
 产物位于 `src-tauri/target/distribution/`，包含便携 ZIP、安装版 EXE、`SHA256SUMS.txt` 与构建来源记录。脚本只构建，不会打开应用或执行安装。
@@ -79,7 +79,7 @@ cargo check --manifest-path src-tauri/Cargo.toml --locked
 
 `scripts/` 仅保留 Windows 打包和第三方许可证收集脚本。界面、原生生命周期及安装流程由手动验收完成；CI 保留前端行为测试、lint、Rust 检查和两个版本的构建。
 
-实际验收结果和需要手动完成的项目见 [Windows 验证记录](docs/windows-verification.md)。CI 为分支和 PR 检查、构建并归档两个产物；标签发布先校验版本及 main 归属，两个产物上传草稿成功后再公开 Release。
+Windows 安装器源码及维护方式见 [安装器说明](src-tauri/installer/README.md)。CI 为分支和 PR 检查、构建并归档两个产物；标签发布先校验版本及 main 归属，两个产物上传草稿成功后再公开 Release。
 
 ## 第三方声明
 
