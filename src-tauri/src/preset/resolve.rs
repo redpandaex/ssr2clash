@@ -1,8 +1,9 @@
 use super::{
     ini::{at_line, parse_bool, parse_ini},
+    limits::{check_rule_limits, GroupBudget},
     load_builtin_preset,
     model::{GroupDefinition, ResolvedPreset},
-    rules::{convert_rule, parse_rule_list},
+    rules::{convert_rule, merge_rules, parse_rule_list},
 };
 use crate::{
     model::{
@@ -46,6 +47,7 @@ struct Context<'a> {
     bytes: usize,
     rule_bytes: usize,
     rule_count: usize,
+    group_budget: GroupBudget,
 }
 
 impl Context<'_> {
@@ -160,6 +162,7 @@ impl Context<'_> {
                 Ok(groups)
             } else {
                 let definition = GroupDefinition::parse(&value)?;
+                self.group_budget.add(&definition)?;
                 for selector in &definition.selectors {
                     if selector.starts_with("[]") {
                         continue;
@@ -292,6 +295,7 @@ pub async fn resolve_preset(
         bytes: 0,
         rule_bytes: 0,
         rule_count: 0,
+        group_budget: GroupBudget::default(),
     };
     context.enter(&location, 0)?;
     let text = context.load(&location).await?;
@@ -379,6 +383,9 @@ pub async fn resolve_preset(
                     tolerance: group.tolerance,
                 })
                 .collect();
+            for group in &groups {
+                context.group_budget.add(group)?;
+            }
         } else {
             groups = load_builtin_preset()?.groups;
         }
@@ -386,14 +393,13 @@ pub async fn resolve_preset(
     if enabled && !had_ruleset && base_rules.is_empty() {
         generated = load_builtin_preset()?.rules;
     }
-    let mut rules = if !enabled || !overwrite {
+    let original = if !enabled || !overwrite {
         base_rules
     } else {
         vec![]
     };
-    if enabled {
-        rules.extend(generated);
-    }
+    let rules = merge_rules(original, if enabled { generated } else { vec![] })?;
+    check_rule_limits(&rules)?;
     if rules.is_empty() {
         return Err(AppError::new(
             "NoRoutingRules",

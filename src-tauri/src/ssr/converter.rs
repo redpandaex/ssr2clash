@@ -2,7 +2,11 @@ use crate::model::clash::{ClashConfig, ClashProxy, ClashProxyGroup};
 use crate::model::ssr::SsrNode;
 use crate::{
     model::app::AppError,
-    preset::{model::ResolvedPreset, validate_config, BUILTIN_TARGETS},
+    preset::{
+        limits::{check_rule_limits, reserve_checks, GroupBudget, MemberBudget},
+        model::ResolvedPreset,
+        validate_config, BUILTIN_TARGETS,
+    },
 };
 use fancy_regex::RegexBuilder;
 use std::collections::HashSet;
@@ -37,6 +41,11 @@ pub fn build_clash_config(
     preset: &ResolvedPreset,
     enable_udp: bool,
 ) -> Result<ClashConfig, AppError> {
+    let mut definitions = GroupBudget::default();
+    for group in &preset.groups {
+        definitions.add(group)?;
+    }
+    check_rule_limits(&preset.rules)?;
     let mut used: HashSet<String> = BUILTIN_TARGETS
         .iter()
         .map(|value| (*value).into())
@@ -59,12 +68,15 @@ pub fn build_clash_config(
         node.remarks = name;
     }
     let mut groups = Vec::new();
+    let mut member_budget = MemberBudget::default();
+    let mut match_checks = 0;
     for definition in &preset.groups {
         let mut members = Vec::new();
         let mut seen = HashSet::new();
         for selector in &definition.selectors {
             if let Some(reference) = selector.strip_prefix("[]") {
-                if seen.insert(reference.to_owned()) {
+                if seen.insert(reference) {
+                    member_budget.add(reference)?;
                     members.push(reference.to_owned());
                 }
                 continue;
@@ -80,6 +92,12 @@ pub fn build_clash_config(
             } else {
                 (None, selector.as_str())
             };
+            reserve_checks(
+                &mut match_checks,
+                nodes
+                    .len()
+                    .saturating_mul(if source_group.is_some() { 2 } else { 1 }),
+            )?;
             let compile = |pattern: &str| {
                 RegexBuilder::new(pattern)
                     .backtrack_limit(100_000)
@@ -103,7 +121,8 @@ pub fn build_clash_config(
                     .transpose()
                     .map_err(|_| AppError::new("InvalidRegex", "来源组正则匹配失败"))?
                     .unwrap_or(true);
-                if matches && group_matches && seen.insert(node.remarks.clone()) {
+                if matches && group_matches && seen.insert(node.remarks.as_str()) {
+                    member_budget.add(&node.remarks)?;
                     members.push(node.remarks.clone());
                 }
             }
