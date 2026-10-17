@@ -1,0 +1,7 @@
+{
+  "source": "https://raw.githubusercontent.com/tauri-apps/tauri/tauri-cli-v2.12.3/crates/tauri-bundler/src/bundle/windows/nsis/installer.nsi",
+  "version": "tauri-cli-v2.12.3",
+  "sha256": "8ae02c66f8adb4a0d15d97f984fbacd2b44262d8a4d03fefaf6177f67f7008e5",
+  "license": "MIT OR Apache-2.0",
+  "change": "Replace the unconditional current-user autostart deletion block with SSR2CLASH_REMOVE_OWN_AUTOSTART from hooks.nsh. All directory, upgrade, data-removal and shortcut pages remain upstream."
+}

@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "SSR2Clash",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "identifier": "com.redpandaex.ssr2clash",
   "build": {
     "beforeDevCommand": "corepack pnpm dev",
@@ -26,7 +26,33 @@
     }
   },
   "bundle": {
-    "active": false,
+    "active": true,
+    "targets": ["nsis"],
+    "publisher": "redpandaex",
+    "shortDescription": "SSR 订阅转换与本地托管",
+    "resources": {
+      "resources/THIRD-PARTY-NOTICES.txt": "THIRD-PARTY-NOTICES.txt",
+      "resources/presets/default/LICENSE": "licenses/subconverter-GPL-3.0.txt",
+      "resources/licenses/tauri-MIT.txt": "licenses/tauri-MIT.txt",
+      "resources/licenses/tauri-APACHE-2.0.txt": "licenses/tauri-APACHE-2.0.txt",
+      "resources/licenses/geist-OFL-1.1.txt": "licenses/geist-OFL-1.1.txt",
+      "resources/licenses/geist-mono-OFL-1.1.txt": "licenses/geist-mono-OFL-1.1.txt",
+      "resources/licenses/frontend-LICENSES.txt": "licenses/frontend-LICENSES.txt"
+    },
+    "windows": {
+      "allowDowngrades": false,
+      "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true },
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["SimpChinese", "English"],
+        "displayLanguageSelector": false,
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico",
+        "template": "installer/installer.nsi",
+        "installerHooks": "installer/hooks.nsh",
+        "startMenuFolder": "SSR2Clash"
+      }
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

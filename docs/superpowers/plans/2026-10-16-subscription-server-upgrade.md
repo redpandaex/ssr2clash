@@ -225,11 +225,11 @@ expect(screen.getByText('2 个节点')).toBeVisible(); // 不把 10 个策略组
 
 **Interfaces:** `package-windows.ps1` 从同一提交生成 `ssr2clash_<version>_windows_x64_portable.zip` 和 `ssr2clash_<version>_windows_x64_setup.exe`；便携 ZIP 有 exe、portable.flag、说明，没有预置数据或令牌。三个应用版本统一为本次迭代的 `1.1.0`。
 
-- [ ] **Step 1:** 为打包脚本写可直接运行的产物检查：两种包存在且非空，ZIP 条目符合清单、无 data／订阅／令牌；exe 产品版本与安装器版本一致。此项验证真实产物，不用只检查配置文件字段的测试替代安装验证。
-- [ ] **Step 2:** 启用 NSIS bundling，当前用户安装、正常交互有目录选择页；升级读取已安装目录。按实际安装路径创建快捷方式／卸载项，卸载只清理属于该路径的自启注册，用户未选清理时保留 AppData。保留原始 NSIS 模板，优先使用官方配置和必要的 hooks。
-- [ ] **Step 3:** 通过官方构建命令实际生成 exe 与 NSIS 包，再由脚本组装便携 ZIP。CI 对分支／PR 执行前后端检查并归档两个构建产物；已有 tag 发布流程上传两种包、固定 pnpm，检查失败时不发布半套产物。
-- [ ] **Step 4:** 在隔离 Windows 环境验证自定义路径、D 盘路径、中文／空格路径、不可写目录；安装→使用虚构订阅生成快照→覆盖升级→重启应用，确认端口、令牌和快照保留。分别验证默认保留数据与明确清理数据的卸载行为，以及便携版更换工作目录／整体移动／覆盖升级。检查任务栏、开始菜单、快捷方式、自启的真实路径与图标。
-- [ ] **Step 5:** 运行最终 `pnpm test`、`pnpm build`、相关 lint，以及带 `--manifest-path src-tauri/Cargo.toml` 的 cargo fmt／test／check 命令，记录命令和结果。将实际运行的检查、包路径、已验证和待物理验证事项写入 windows-verification.md；用户真实订阅／Clash Verge 导入与实际重启登录验证不由假上游或构建成功替代。提交信息 `build: ship portable and installable Windows packages`。
+- [x] **Step 1:** 为打包脚本写可直接运行的产物检查：两种包存在且非空，ZIP 条目符合清单、无 data／订阅／令牌；exe 产品版本与安装器版本一致。此项验证真实产物，不用只检查配置文件字段的测试替代安装验证。
+- [x] **Step 2:** 启用 NSIS bundling，当前用户安装、正常交互有目录选择页；升级读取已安装目录。按实际安装路径创建快捷方式／卸载项，卸载只清理属于该路径的自启注册，用户未选清理时保留 AppData。保留原始 NSIS 模板，优先使用官方配置和必要的 hooks。
+- [x] **Step 3:** 通过官方构建命令实际生成 exe 与 NSIS 包，再由脚本组装便携 ZIP。CI 对分支／PR 执行前后端检查并归档两个构建产物；已有 tag 发布流程上传两种包、固定 pnpm，检查失败时不发布半套产物。
+- [x] **Step 4（按用户手动预览调整）：** 自动验收不再打开安装器或应用窗口；使用同一份 NSIS 宏的静默隔离测试，验证 D 盘、中文／空格路径、自启归属和迁移、便携目录与无效路径保护。实际安装向导、权限不足目录、安装→快照→升级→重开、两种卸载选择、便携包移动／覆盖升级和原生壳图标列入 `docs/windows-verification.md` 的手动验收，不声称这些完整流程已自动通过。
+- [x] **Step 5:** 运行最终 `pnpm test`、`pnpm build`、相关 lint，以及带 `--manifest-path src-tauri/Cargo.toml` 的 cargo fmt／test／check 命令，记录命令和结果。将实际运行的检查、包路径、已验证和待物理验证事项写入 windows-verification.md；用户真实订阅／Clash Verge 导入与实际重启登录验证不由假上游或构建成功替代。提交信息 `build: ship portable and installable Windows packages`。
 
 ## 自检与执行交接
 

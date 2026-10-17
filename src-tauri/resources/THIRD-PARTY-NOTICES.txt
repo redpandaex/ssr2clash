@@ -1,0 +1,26 @@
+SSR2Clash 1.1.0 — third-party notices
+
+The built-in group definitions and normalized routing rules originate from
+tindy2013/subconverter v0.9.0, commit b9ad0c2ee2b959e2b10195e928bf8f30f55a6a78.
+Source: https://github.com/tindy2013/subconverter
+Recorded inputs and generation procedure: src-tauri/tests/fixtures/subconverter
+in the corresponding source checkout at https://github.com/redpandaex/ssr2clash.
+License: GNU GPL version 3, included as licenses/subconverter-GPL-3.0.txt.
+SSR2Clash implements conversion in Rust; the subconverter executable is not bundled.
+
+Tauri and the NSIS installer template:
+https://github.com/tauri-apps/tauri
+Template pinned to tauri-cli-v2.12.3; only autostart removal delegates to an
+installation-path ownership check. MIT and Apache-2.0 texts are included.
+
+Geist and Geist Mono fonts:
+Copyright 2024 The Geist Project Authors.
+https://github.com/vercel/geist-font
+SIL Open Font License 1.1; both font license texts are included.
+
+Frontend components use React (MIT), Radix UI (MIT) and Lucide (ISC).
+https://github.com/facebook/react
+https://github.com/radix-ui/primitives
+https://github.com/lucide-icons/lucide
+Generated frontend license texts are in licenses/frontend-LICENSES.txt.
+Dependency versions are recorded in pnpm-lock.yaml and Cargo.lock in the source.

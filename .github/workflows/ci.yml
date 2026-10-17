@@ -1,0 +1,64 @@
+name: Windows CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-and-package:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - name: Use pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.34.7 --activate
+          corepack pnpm install --frozen-lockfile
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "src-tauri -> target"
+      - name: Frontend behavior and lint
+        run: |
+          corepack pnpm test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          corepack pnpm lint
+      - name: Rust checks
+        run: |
+          cargo fmt --manifest-path src-tauri/Cargo.toml --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo test --manifest-path src-tauri/Cargo.toml --locked
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo check --manifest-path src-tauri/Cargo.toml --locked
+      - name: Build and verify both Windows packages
+        run: ./scripts/package-windows.ps1
+      - name: Verify isolated installer hooks
+        run: ./scripts/verify-installer-hooks.ps1
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ssr2clash-windows-x64-${{ github.sha }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            src-tauri/target/distribution/*_portable.zip
+            src-tauri/target/distribution/*_setup.exe
+            src-tauri/target/distribution/SHA256SUMS.txt
+            src-tauri/target/distribution/build-info.json
