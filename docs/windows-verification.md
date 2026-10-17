@@ -25,7 +25,9 @@
 - `src-tauri/target/distribution/ssr2clash_1.1.0_windows_x64_setup.exe`
 - 同目录 `SHA256SUMS.txt` 和 `build-info.json` 记录哈希、源码提交及是否存在未提交改动。
 
-`verify-windows-packages.ps1` 打开真实 ZIP 并提取 exe 读取 PE 版本，直接读取安装器 PE 版本，未运行二者。大小和哈希以最后一次构建的文件为准。
+此前曾使用产物验证脚本打开真实 ZIP 并提取 exe 读取 PE 版本，直接读取安装器 PE 版本，未运行二者。大小和哈希以最后一次构建的文件为准。
+
+2026-10-17 已清理开发期的 5 个 `verify-*` 脚本及 CI/Release 对它们的调用，移除仅供这些脚本使用的 Playwright。上表中的界面、生命周期、图标、安装钩子与产物检查均为此前的历史执行记录；当前打包脚本只负责构建和归档，相关运行行为由手动验收。
 
 ## 安装器依据与边界
 
