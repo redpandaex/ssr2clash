@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$SkipBuild, [string]$OutputDirectory = 'src-tauri/target/distribution')
+param([switch]$SkipBuild, [switch]$SkipVerification, [string]$OutputDirectory = 'src-tauri/target/distribution')
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if (-not $IsWindows -or $PSVersionTable.PSVersion.Major -lt 7) { throw 'Build packages with PowerShell 7 on Windows' }
@@ -49,7 +49,9 @@ try {
             Remove-Item -LiteralPath $resolvedStage -Recurse -Force
         }
     }
-    & "$PSScriptRoot/verify-windows-packages.ps1" -OutputDirectory $outputRoot
+    if (-not $SkipVerification) {
+        & "$PSScriptRoot/verify-windows-packages.ps1" -OutputDirectory $outputRoot
+    }
     $commit = (& git rev-parse HEAD).Trim()
     $dirty = [bool](& git status --porcelain)
     $buildInfo = [ordered]@{ version = $version; commit = $commit; workingTreeDirty = $dirty; target = 'x86_64-pc-windows-msvc'; generatedAt = [DateTime]::UtcNow.ToString('o') }

@@ -50,6 +50,7 @@ try {
             };
             export const listenStateChanged = async handler => { handlers.add(handler); return () => handlers.delete(handler); };
             export const copyText = async value => { window.testClipboard = value; };
+            export const openDataDirectory = async () => {};
             export const exportYaml = async value => { window.testExport = value; return true; };
             export const chooseIni = async () => 'D:/test/config.ini';
         `;

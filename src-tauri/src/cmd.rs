@@ -3,6 +3,18 @@ use crate::{
     model::app::{AppError, AppSettings, OutputDetails},
 };
 use tauri::{AppHandle, State};
+use tauri_plugin_opener::OpenerExt;
+
+#[tauri::command]
+pub async fn open_data_directory(
+    app: AppHandle,
+    context: State<'_, DesktopContext>,
+) -> Result<(), AppError> {
+    let path = context.core()?.paths.root.to_string_lossy().into_owned();
+    app.opener()
+        .open_path(path, None::<&str>)
+        .map_err(|_| AppError::new("OpenDirectory", "无法打开数据目录"))
+}
 
 #[tauri::command]
 pub async fn get_state(

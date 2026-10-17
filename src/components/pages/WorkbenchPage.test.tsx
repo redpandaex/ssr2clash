@@ -19,6 +19,7 @@ vi.mock("@/lib/api/subscription", () => ({
 	},
 	listenStateChanged: vi.fn(async () => () => {}),
 	copyText: vi.fn(),
+	openDataDirectory: vi.fn(),
 	exportYaml: vi.fn(),
 	chooseIni: vi.fn(),
 }));

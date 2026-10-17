@@ -47,13 +47,6 @@ export function SubscriptionForm({
 		<section className="subscription-panel panel" aria-label="订阅配置">
 			<div className="field-heading">
 				<label htmlFor="source-url">原订阅地址</label>
-				<span className="field-hint">
-					{frozen
-						? "快照已冻结，关闭后可编辑"
-						: dirty
-							? "有未保存的更改"
-							: "单个 SSR 订阅"}
-				</span>
 			</div>
 			<form
 				className="source-row"

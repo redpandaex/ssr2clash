@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { copyText } from "@/lib/api/subscription";
+import { yamlFilename } from "@/lib/filename";
 import type { CoreStatus, OutputDetails } from "@/lib/types";
 
 export type OutputTab = "nodes" | "groups" | "yaml";
@@ -84,11 +85,6 @@ export function OutputWorkspace({
 							<Network size={28} />
 						</span>
 						<h2>{core.refreshing ? "正在生成配置" : "从一条订阅开始"}</h2>
-						<p>
-							{core.refreshing
-								? "正在获取节点并生成分组与规则，请稍候。"
-								: "粘贴原订阅并更新，即可查看节点与完整 Clash 配置。"}
-						</p>
 						{core.refreshing && (
 							<div className="skeleton-lines">
 								<span />
@@ -125,6 +121,7 @@ export function OutputWorkspace({
 										<colgroup>
 											<col className="name-col" />
 											<col className="protocol-col" />
+											<col className="obfs-col" />
 											<col className="server-col" />
 											<col className="port-col" />
 										</colgroup>
@@ -132,6 +129,7 @@ export function OutputWorkspace({
 											<tr>
 												<th>节点</th>
 												<th>类型</th>
+												<th>混淆方式</th>
 												<th>地址</th>
 												<th>端口</th>
 											</tr>
@@ -152,6 +150,9 @@ export function OutputWorkspace({
 																{node.type.toUpperCase()}
 															</span>
 														</td>
+														<td className="mono" title={node.obfs}>
+															{node.obfs || "—"}
+														</td>
 														<td
 															className="mono server-cell"
 															title={node.server}
@@ -169,11 +170,7 @@ export function OutputWorkspace({
 								</div>
 							)}
 							<div className="table-footer">
-								<span>
-									{query
-										? `${nodes.length} 个匹配结果`
-										: "节点信息来自最近一次成功更新"}
-								</span>
+								<span>{query ? `${nodes.length} 个匹配结果` : ""}</span>
 								{pages > 1 && (
 									<div className="pagination">
 										<button
@@ -233,7 +230,7 @@ export function OutputWorkspace({
 							<div className="yaml-tools">
 								<span>
 									<FileCode2 size={15} />
-									subscription.yaml
+									{yamlFilename()}
 								</span>
 								<button
 									type="button"

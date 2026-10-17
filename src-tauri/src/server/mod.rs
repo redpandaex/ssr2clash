@@ -2,7 +2,7 @@ mod handlers;
 
 use crate::{model::app::AppError, service::AppService};
 use std::{
-    net::Ipv4Addr,
+    net::{Ipv4Addr, SocketAddr},
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
@@ -51,15 +51,19 @@ impl ServerController {
             return Ok(());
         }
         *current = None;
-        let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, port))
-            .await
-            .map_err(|error| {
-                if error.kind() == std::io::ErrorKind::AddrInUse {
-                    AppError::new("PortInUse", "本地端口已被占用，请停止占用程序或修改端口")
-                } else {
-                    AppError::new("ServerBind", "无法监听本地端口，请检查端口和系统权限")
-                }
-            })?;
+        let allow_lan = self.service.status().await.settings.allow_lan;
+        let address = if allow_lan {
+            Ipv4Addr::UNSPECIFIED
+        } else {
+            Ipv4Addr::LOCALHOST
+        };
+        let listener = TcpListener::bind((address, port)).await.map_err(|error| {
+            if error.kind() == std::io::ErrorKind::AddrInUse {
+                AppError::new("PortInUse", "本地端口已被占用，请停止占用程序或修改端口")
+            } else {
+                AppError::new("ServerBind", "无法监听本地端口，请检查端口和系统权限")
+            }
+        })?;
         let actual_port = listener
             .local_addr()
             .map_err(|_| AppError::new("ServerBind", "无法读取监听端口"))?
@@ -70,11 +74,14 @@ impl ServerController {
         let app = handlers::router(self.service.clone(), accepting.clone());
         let (shutdown, signal) = oneshot::channel();
         let task = tokio::spawn(async move {
-            axum::serve(listener, app)
-                .with_graceful_shutdown(async {
-                    let _ = signal.await;
-                })
-                .await
+            axum::serve(
+                listener,
+                app.into_make_service_with_connect_info::<SocketAddr>(),
+            )
+            .with_graceful_shutdown(async {
+                let _ = signal.await;
+            })
+            .await
         });
         *current = Some(Running {
             accepting,

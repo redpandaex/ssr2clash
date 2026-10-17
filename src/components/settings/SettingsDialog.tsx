@@ -3,7 +3,7 @@ import { FolderOpen, Settings2, X } from "lucide-react";
 import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import type { AppActions } from "@/hooks/useAppState";
-import { chooseIni, copyText } from "@/lib/api/subscription";
+import { chooseIni, openDataDirectory } from "@/lib/api/subscription";
 import type { AppError, AppSettings, AppView, Theme } from "@/lib/types";
 
 interface Props {
@@ -62,7 +62,7 @@ export function SettingsDialog({
 								<Settings2 size={20} />
 								设置
 							</Dialog.Title>
-							<Dialog.Description id="settings-description">
+							<Dialog.Description id="settings-description" className="sr-only">
 								配置本地服务、应用行为和分流预设。
 							</Dialog.Description>
 						</div>
@@ -76,7 +76,6 @@ export function SettingsDialog({
 							<div className="setting-row">
 								<div>
 									<label htmlFor="appearance-theme">外观主题</label>
-									<p>浅色、深色或跟随系统。</p>
 								</div>
 								<select
 									id="appearance-theme"
@@ -94,7 +93,6 @@ export function SettingsDialog({
 							<div className="setting-row">
 								<div>
 									<label htmlFor="autostart-setting">开机自启</label>
-									<p>登录 Windows 后在托盘中启动。</p>
 								</div>
 								<Switch
 									id="autostart-setting"
@@ -111,7 +109,6 @@ export function SettingsDialog({
 							<div className="setting-row">
 								<div>
 									<label htmlFor="close-to-tray">关闭窗口留在托盘</label>
-									<p>服务继续运行，可从托盘菜单退出。</p>
 								</div>
 								<Switch
 									id="close-to-tray"
@@ -128,14 +125,12 @@ export function SettingsDialog({
 							<div className="setting-row">
 								<div>
 									<label htmlFor="service-port">监听端口</label>
-									<p>
-										{view.core.serverRunning
-											? "停止服务后可修改端口。"
-											: "仅监听 127.0.0.1，改端口后需更新 Clash 中的链接。"}
-									</p>
 								</div>
 								<input
 									id="service-port"
+									title={
+										view.core.serverRunning ? "停止服务后可修改端口" : undefined
+									}
 									type="number"
 									min={1}
 									max={65535}
@@ -152,8 +147,25 @@ export function SettingsDialog({
 							)}
 							<div className="setting-row">
 								<div>
+									<label htmlFor="allow-lan">允许局域网访问</label>
+								</div>
+								<Switch
+									id="allow-lan"
+									title={
+										view.core.serverRunning
+											? "停止服务后可修改访问范围"
+											: undefined
+									}
+									checked={draft.allowLan}
+									disabled={view.core.serverRunning || busy}
+									onCheckedChange={(allowLan) =>
+										onChange({ ...draft, allowLan })
+									}
+								/>
+							</div>
+							<div className="setting-row">
+								<div>
 									<label htmlFor="fetch-proxy">获取订阅的代理</label>
-									<p>系统代理不可用时可切回直连。</p>
 								</div>
 								<select
 									id="fetch-proxy"
@@ -174,16 +186,11 @@ export function SettingsDialog({
 						</section>
 						<section className="settings-section">
 							<h3>分组与规则</h3>
-							<p className="section-description">
-								默认使用 subconverter 默认分流，也可导入常见 INI 预设。
-							</p>
-							{frozen && (
-								<p className="frozen-note">关闭冻结快照后可更改预设。</p>
-							)}
 							<div className="field">
 								<label htmlFor="preset-source">分流预设</label>
 								<select
 									id="preset-source"
+									title={frozen ? "关闭冻结快照后可更改预设" : undefined}
 									value={draft.profile.preset.kind}
 									disabled={frozen || busy}
 									onChange={(event) => {
@@ -253,9 +260,6 @@ export function SettingsDialog({
 									/>
 								</div>
 							)}
-							<p className="settings-footnote">
-								支持分组、规则列表与相对导入。使用脚本或模板语言的预设会提示不支持。
-							</p>
 						</section>
 						<section className="settings-section data-location">
 							<h3>数据与版本</h3>
@@ -263,19 +267,19 @@ export function SettingsDialog({
 								{view.desktop.runMode === "portable" ? "便携版" : "安装版"} ·
 								SSR2Clash {view.desktop.appVersion}
 							</span>
-							<p className="mono" title={view.desktop.dataDirectory}>
-								{view.desktop.dataDirectory}
-							</p>
 							<button
 								type="button"
-								className="text-button"
+								className="data-directory-path mono"
+								title="在文件管理器中打开"
+								disabled={busy}
 								onClick={() => {
-									void copyText(view.desktop.dataDirectory)
-										.then(() => setIssue("数据目录已复制"))
-										.catch(() => setIssue("复制失败，请手动复制目录"));
+									setIssue("");
+									void openDataDirectory().catch(() =>
+										setIssue("无法打开数据目录"),
+									);
 								}}
 							>
-								复制数据目录
+								{view.desktop.dataDirectory}
 							</button>
 						</section>
 						{(error || issue) && (

@@ -13,6 +13,7 @@ export interface ProfileConfig {
 export interface AppSettings {
 	profile: ProfileConfig;
 	port: number;
+	allowLan: boolean;
 	closeToTray: boolean;
 	fetchProxy: "direct" | "system";
 	theme: Theme;

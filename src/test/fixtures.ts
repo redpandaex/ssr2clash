@@ -12,6 +12,7 @@ export function emptyView(): AppView {
 					preset: { kind: "builtin" },
 				},
 				port: 25501,
+				allowLan: false,
 				closeToTray: true,
 				fetchProxy: "direct",
 				theme: "system",

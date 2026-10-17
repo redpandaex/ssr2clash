@@ -2,6 +2,7 @@ pub mod cmd;
 pub mod conversion;
 pub mod desktop;
 pub mod model;
+mod network;
 pub mod preset;
 pub mod server;
 pub mod service;
@@ -29,6 +30,7 @@ pub fn run() {
         )
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let context = tauri::async_runtime::block_on(DesktopContext::initialize(app.handle()));
             let initialized = context.core().is_ok();
@@ -95,6 +97,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             cmd::get_state,
+            cmd::open_data_directory,
             cmd::get_output_details,
             cmd::save_settings,
             cmd::refresh_subscription,

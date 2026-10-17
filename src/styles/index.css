@@ -345,6 +345,14 @@ pre {
 	min-height: 51px;
 	padding: 0 2px 2px;
 }
+.workbench-content {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+.workbench-content[hidden] {
+	display: none;
+}
 .workbench-header h1 {
 	font-size: 27px;
 	line-height: 1.2;
@@ -580,22 +588,26 @@ pre {
 }
 .nodes-table {
 	width: 100%;
+	min-width: 620px;
 	table-layout: fixed;
 	border-collapse: collapse;
 	text-align: left;
 	font-size: 12px;
 }
 .nodes-table .name-col {
-	width: 34%;
+	width: 30%;
 }
 .nodes-table .protocol-col {
-	width: 13%;
+	width: 10%;
+}
+.nodes-table .obfs-col {
+	width: 22%;
 }
 .nodes-table .server-col {
-	width: 40%;
+	width: 26%;
 }
 .nodes-table .port-col {
-	width: 13%;
+	width: 12%;
 }
 .nodes-table thead {
 	position: sticky;
@@ -945,38 +957,20 @@ pre {
 	margin-top: auto;
 	padding-top: 15px;
 }
-.feedback {
-	color: var(--muted);
-	min-height: 16px;
-	margin-top: 7px;
-	text-align: center;
-	font-size: 9px;
-}
-.runtime-panel > summary {
-	display: flex;
-	align-items: center;
-	gap: 9px;
-	padding: 12px 17px;
+.data-directory-path {
+	display: block;
+	width: 100%;
+	margin-top: 8px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--blue-text);
+	text-align: left;
+	overflow-wrap: anywhere;
 	font-size: 11px;
-	font-weight: 550;
-	cursor: pointer;
-	list-style: none;
 }
-.runtime-panel > summary > svg:first-child {
-	color: var(--muted);
-}
-.runtime-panel > summary > svg:last-child {
-	margin-left: 4px;
-	color: var(--muted);
-}
-.runtime-count {
-	margin-left: auto;
-	color: var(--muted);
-	font-size: 10px;
-	font-weight: 400;
-}
-.runtime-panel:where([open]) > summary {
-	border-bottom: 1px solid var(--line);
+.data-directory-path:hover {
+	text-decoration: underline;
 }
 details[open] > summary > svg:last-child {
 	transform: rotate(180deg);
@@ -984,29 +978,60 @@ details[open] > summary > svg:last-child {
 summary::-webkit-details-marker {
 	display: none;
 }
-.runtime-body {
-	padding: 13px 17px;
-	font-size: 11px;
+.logs-panel {
+	overflow: hidden;
 }
-.runtime-body > ol {
-	padding: 0;
-	margin: 0;
-	list-style: none;
-	max-height: 220px;
+.logs-scroll {
+	height: calc(100dvh - 215px);
+	min-height: 360px;
 	overflow: auto;
 }
-.runtime-body li {
-	display: flex;
-	gap: 16px;
-	padding: 5px 0;
+.logs-table {
+	width: 100%;
+	table-layout: fixed;
+	border-collapse: collapse;
+	text-align: left;
+	font-size: 12px;
 }
-.runtime-body li time {
-	font-variant-numeric: tabular-nums;
+.log-time-col {
+	width: 110px;
+}
+.log-level-col {
+	width: 80px;
+}
+.logs-table thead {
+	position: sticky;
+	top: 0;
+	background: var(--subtle);
+}
+.logs-table th,
+.logs-table td {
+	padding: 12px 18px;
+	border-bottom: 1px solid var(--line);
+}
+.logs-table th,
+.logs-table time {
 	color: var(--muted);
-	flex-shrink: 0;
+	font-weight: 400;
+	font-variant-numeric: tabular-nums;
 }
-.runtime-body li[data-level="error"] {
+.logs-table td:last-child {
+	overflow-wrap: anywhere;
+}
+.log-level {
+	color: var(--blue-text);
+}
+.logs-table tr[data-level="error"] .log-level {
 	color: var(--error);
+}
+.logs-empty {
+	height: 240px;
+	text-align: center;
+	color: var(--muted);
+}
+.logs-panel .debug-preview {
+	margin: 0;
+	padding: 14px 18px;
 }
 .debug-preview {
 	border-top: 1px solid var(--line);
@@ -1032,20 +1057,6 @@ summary::-webkit-details-marker {
 	border-radius: 5px;
 	padding: 12px;
 	margin-bottom: 0;
-}
-.workbench-footer {
-	display: flex;
-	justify-content: space-between;
-	gap: 16px;
-	padding: 0 1px;
-	font-size: 9px;
-	color: var(--muted);
-}
-.workbench-footer a {
-	display: inline-flex;
-	align-items: center;
-	gap: 3px;
-	color: var(--muted);
 }
 .error-banner {
 	display: flex;
@@ -1428,10 +1439,6 @@ summary::-webkit-details-marker {
 	}
 	.workbench {
 		padding: 18px 14px;
-	}
-	.workbench-footer {
-		flex-direction: column;
-		gap: 6px;
 	}
 }
 @media (prefers-reduced-motion: reduce) {

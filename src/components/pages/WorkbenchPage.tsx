@@ -1,6 +1,6 @@
 import {
 	AlertCircle,
-	ArrowUpRight,
+	FileText,
 	LayoutDashboard,
 	Play,
 	Settings2,
@@ -13,12 +13,12 @@ import {
 	type OutputTab,
 	OutputWorkspace,
 } from "@/components/workbench/OutputWorkspace";
-import { RuntimeLog } from "@/components/workbench/RuntimeLog";
 import { ServiceInspector } from "@/components/workbench/ServiceInspector";
 import { SubscriptionForm } from "@/components/workbench/SubscriptionForm";
 import { useAppState } from "@/hooks/useAppState";
 import { useSettingsDraft } from "@/hooks/useSettingsDraft";
 import type { AppView } from "@/lib/types";
+import { LogsPage } from "./LogsPage";
 
 export function WorkbenchPage() {
 	const state = useAppState();
@@ -78,6 +78,7 @@ function WorkbenchContent({
 	const [settingsOpen, setSettingsOpen] = useState(false);
 	const settingsOpener = useRef<HTMLElement | null>(null);
 	const [tab, setTab] = useState<OutputTab>("nodes");
+	const [page, setPage] = useState<"workbench" | "logs">("workbench");
 	const core = view.core;
 	const frozen = core.mode === "snapshot";
 	const busy = !!pending;
@@ -102,7 +103,7 @@ function WorkbenchContent({
 	return (
 		<div className="app-shell">
 			<a className="skip-link" href="#main-content">
-				跳到工作台
+				跳到内容
 			</a>
 			<aside className="sidebar">
 				<div className="brand">
@@ -113,12 +114,21 @@ function WorkbenchContent({
 				<nav aria-label="主导航">
 					<button
 						type="button"
-						className="active"
-						aria-current="page"
-						onClick={() => setTab("nodes")}
+						className={page === "workbench" ? "active" : ""}
+						aria-current={page === "workbench" ? "page" : undefined}
+						onClick={() => setPage("workbench")}
 					>
 						<LayoutDashboard size={18} />
 						<span>工作台</span>
+					</button>
+					<button
+						type="button"
+						className={page === "logs" ? "active" : ""}
+						aria-current={page === "logs" ? "page" : undefined}
+						onClick={() => setPage("logs")}
+					>
+						<FileText size={18} />
+						<span>日志</span>
 					</button>
 					<button type="button" aria-label="打开设置" onClick={openSettings}>
 						<Settings2 size={18} />
@@ -143,8 +153,7 @@ function WorkbenchContent({
 			<main className="workbench" id="main-content">
 				<header className="workbench-header">
 					<div>
-						<h1>工作台</h1>
-						<p>订阅转换与本地托管</p>
+						<h1>{page === "workbench" ? "工作台" : "日志"}</h1>
 					</div>
 					<div className="header-actions">
 						<span className={`mode-tag ${frozen ? "frozen" : ""}`}>
@@ -173,80 +182,64 @@ function WorkbenchContent({
 						</button>
 					</div>
 				</header>
-				<SubscriptionForm
-					draft={draft}
-					onChange={setDraft}
-					frozen={frozen}
-					busy={busy || core.refreshing}
-					dirty={dirty}
-					refreshing={pending === "refresh" || core.refreshing}
-					onSave={() => void actions.saveSettings(draft)}
-					onRefresh={() => void refresh()}
-					onPreset={openSettings}
-				/>
-				{warning && (
-					<div className="error-banner" role="alert">
-						<AlertCircle size={18} />
-						<div>
-							<strong>上次更新失败，正在使用之前的配置</strong>
-							<p>{core.lastError}</p>
-						</div>
-					</div>
-				)}
 				{operationError && (
 					<div className="error-banner" role="alert">
 						<AlertCircle size={18} />
 						<p>{operationError}</p>
 					</div>
 				)}
-				{frozen && (
-					<div className="freeze-banner">
-						<Snowflake size={15} />
-						<span>
-							当前输出已冻结。关闭右侧快照开关后，可修改订阅与分流设置。
-						</span>
+				<div className="workbench-content" hidden={page !== "workbench"}>
+					<SubscriptionForm
+						draft={draft}
+						onChange={setDraft}
+						frozen={frozen}
+						busy={busy || core.refreshing}
+						dirty={dirty}
+						refreshing={pending === "refresh" || core.refreshing}
+						onSave={() => void actions.saveSettings(draft)}
+						onRefresh={() => void refresh()}
+						onPreset={openSettings}
+					/>
+					{warning && (
+						<div className="error-banner" role="alert">
+							<AlertCircle size={18} />
+							<div>
+								<strong>上次更新失败，正在使用之前的配置</strong>
+								<p>{core.lastError}</p>
+							</div>
+						</div>
+					)}
+					<div className="workspace-grid">
+						<OutputWorkspace
+							core={core}
+							output={output}
+							tab={tab}
+							onTab={setTab}
+						/>
+						<ServiceInspector
+							core={core}
+							busy={busy}
+							onSnapshot={(enabled) => void actions.setSnapshot(enabled)}
+							onRefreshAddresses={() => void actions.retry()}
+						/>
 					</div>
-				)}
-				<div className="workspace-grid">
-					<OutputWorkspace
-						core={core}
-						output={output}
-						tab={tab}
-						onTab={setTab}
-					/>
-					<ServiceInspector
-						core={core}
-						busy={busy}
-						onSnapshot={(enabled) => void actions.setSnapshot(enabled)}
-					/>
+					{!!core.activeResult?.warnings.length && (
+						<details className="warnings-panel">
+							<summary>
+								{core.activeResult.invalidCount
+									? `${core.activeResult.invalidCount} 个无效节点已跳过`
+									: "转换提示"}
+								<span>{core.activeResult.warnings.length} 条</span>
+							</summary>
+							<ul>
+								{core.activeResult.warnings.map((message) => (
+									<li key={message}>{message}</li>
+								))}
+							</ul>
+						</details>
+					)}
 				</div>
-				{!!core.activeResult?.warnings.length && (
-					<details className="warnings-panel">
-						<summary>
-							{core.activeResult.invalidCount
-								? `${core.activeResult.invalidCount} 个无效节点已跳过`
-								: "转换提示"}
-							<span>{core.activeResult.warnings.length} 条</span>
-						</summary>
-						<ul>
-							{core.activeResult.warnings.map((message) => (
-								<li key={message}>{message}</li>
-							))}
-						</ul>
-					</details>
-				)}
-				<RuntimeLog entries={core.logs} output={output} />
-				<footer className="workbench-footer">
-					<span>配置在本机生成与保存</span>
-					<a
-						href="https://github.com/tindy2013/subconverter"
-						target="_blank"
-						rel="noreferrer"
-					>
-						默认分流源自 subconverter
-						<ArrowUpRight size={12} />
-					</a>
-				</footer>
+				{page === "logs" && <LogsPage entries={core.logs} output={output} />}
 			</main>
 			<SettingsDialog
 				open={settingsOpen}
